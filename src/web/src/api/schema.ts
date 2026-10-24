@@ -918,6 +918,10 @@ export interface components {
         Uuid: string;
         /** Format: date-time */
         Timestamp: string;
+        Health: {
+            /** @constant */
+            status: "ok";
+        };
         Error: {
             /** @description Stable machine-readable code. */
             code: string;
@@ -1047,6 +1051,9 @@ export interface components {
             muted: boolean;
             ai_opt_in: boolean;
         };
+        AddMembersRequest: {
+            user_ids: components["schemas"]["Uuid"][];
+        };
         MembershipUpdate: {
             muted?: boolean;
             ai_opt_in?: boolean;
@@ -1104,6 +1111,11 @@ export interface components {
         Thread: {
             parent: components["schemas"]["Message"];
             replies: components["schemas"]["Message"][];
+        };
+        SnippetPreview: {
+            text: string;
+            truncated: boolean;
+            language: string | null;
         };
         /** @enum {string} */
         FileKind: "file" | "image" | "snippet" | "avatar";
@@ -1174,6 +1186,10 @@ export interface components {
             /** @description Snippet with matches wrapped in `**`. */
             headline: string;
             rank: number;
+        };
+        MarkReadRequest: {
+            /** Format: int64 */
+            last_read_seq: number;
         };
         ReadCursor: {
             conversation_id: components["schemas"]["Uuid"];
@@ -1282,6 +1298,10 @@ export interface components {
             suggestion: components["schemas"]["Suggestion"];
             task: components["schemas"]["Task"] | null;
         };
+        CommandRequest: {
+            conversation_id: components["schemas"]["Uuid"];
+            text: string;
+        };
         CommandResult: {
             /** @enum {string} */
             command: "task" | "invite" | "leave";
@@ -1328,6 +1348,20 @@ export interface components {
             status: components["schemas"]["ToolCallStatus"];
             source_message_ids: components["schemas"]["Uuid"][];
             created_at: components["schemas"]["Timestamp"];
+        };
+        AiConfigUpdate: {
+            scopes?: components["schemas"]["Scope"][];
+            active?: boolean;
+        };
+        ConversationAiUpdate: {
+            ai_enabled: boolean;
+        };
+        ProjectRename: {
+            from: string;
+            to: string;
+        };
+        ProjectRenameResult: {
+            updated: number;
         };
     };
     responses: {
@@ -1410,10 +1444,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** @constant */
-                        status: "ok";
-                    };
+                    "application/json": components["schemas"]["Health"];
                 };
             };
         };
@@ -1944,9 +1975,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    user_ids: components["schemas"]["Uuid"][];
-                };
+                "application/json": components["schemas"]["AddMembersRequest"];
             };
         };
         responses: {
@@ -2328,11 +2357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        text: string;
-                        truncated: boolean;
-                        language: string | null;
-                    };
+                    "application/json": components["schemas"]["SnippetPreview"];
                 };
             };
             403: components["responses"]["Forbidden"];
@@ -2400,10 +2425,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    /** Format: int64 */
-                    last_read_seq: number;
-                };
+                "application/json": components["schemas"]["MarkReadRequest"];
             };
         };
         responses: {
@@ -2781,10 +2803,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    conversation_id: components["schemas"]["Uuid"];
-                    text: string;
-                };
+                "application/json": components["schemas"]["CommandRequest"];
             };
         };
         responses: {
@@ -2831,10 +2850,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    scopes?: components["schemas"]["Scope"][];
-                    active?: boolean;
-                };
+                "application/json": components["schemas"]["AiConfigUpdate"];
             };
         };
         responses: {
@@ -2882,9 +2898,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    ai_enabled: boolean;
-                };
+                "application/json": components["schemas"]["ConversationAiUpdate"];
             };
         };
         responses: {
@@ -2962,10 +2976,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    from: string;
-                    to: string;
-                };
+                "application/json": components["schemas"]["ProjectRename"];
             };
         };
         responses: {
@@ -2975,9 +2986,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        updated: number;
-                    };
+                    "application/json": components["schemas"]["ProjectRenameResult"];
                 };
             };
             403: components["responses"]["Forbidden"];
