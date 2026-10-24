@@ -660,7 +660,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** @description Any caller who `can_see` the task. Changing `assignee_id` re-runs `can_assign`. */
+        /**
+         * @description Callers who `can_edit_task`: the assignee, the creator, a superior of the assignee, or a current
+         *     member of the source conversation (department colleagues can see but not edit). Changing
+         *     `assignee_id` re-runs `can_assign`.
+         */
         patch: operations["updateTask"];
         trace?: never;
     };
