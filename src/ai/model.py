@@ -4,6 +4,7 @@ import json
 import os
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -44,6 +45,41 @@ class RecordedModel:
     def choose(self, context: str, tools: list[dict]) -> list[Call]:
         self.inputs.append(context)
         return self.calls
+
+
+class RecordedResponses:
+    """Saved provider calls, keyed by message UUID and optionally event type.
+
+    An exact '<message UUID>:<event type>' key takes precedence. This keeps a
+    message-created response from leaking into its edit/reaction evaluation.
+    Missing entries explicitly choose no_action. No expected labels are read.
+    """
+
+    def __init__(self, responses: dict):
+        self.responses = responses
+
+    @classmethod
+    def from_path(cls, path: Path):
+        responses = json.loads(path.read_text())
+        if not isinstance(responses, dict):
+            raise ValueError("Recorded responses must be an object keyed by source message ID.")
+        for calls in responses.values():
+            if not isinstance(calls, list) or not all(
+                    isinstance(c, dict) and isinstance(c.get("name"), str) and "arguments" in c for c in calls):
+                raise ValueError("Each recording must be a list of {name, arguments} calls.")
+        return cls(responses)
+
+    def choose(self, context: str, tools: list[dict]) -> list[Call]:
+        calls = []
+        for event in json.loads(context)["new_events"]:
+            ident = event["payload"].get("message_id")
+            key = f"{ident}:{event['type']}"
+            saved = self.responses.get(key)
+            if saved is None and event["type"] == "message.created":
+                saved = self.responses.get(ident)
+            if saved:
+                calls.extend(Call(c["name"], c["arguments"]) for c in saved)
+        return calls or [Call("no_action", {"reason": "No recorded action for this event."})]
 
 
 class NativeModel:

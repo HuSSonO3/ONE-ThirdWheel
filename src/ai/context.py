@@ -63,3 +63,14 @@ def event_messages(events: list[dict], limit: int = 30) -> list[dict]:
         elif event["type"] == "message.deleted":
             messages.pop(ident, None)
     return sorted(messages.values(), key=lambda m: m.get("seq", 0))[-limit:]
+
+
+def batch_messages(history: list[dict], batch: list[dict], limit: int = 30) -> list[dict]:
+    """Recent history plus every triggered message and its complete visible thread."""
+    snapshots = event_messages(history, limit=max(1, len(history)))
+    targets = {e["payload"].get("message_id") for e in batch}
+    roots = {m.get("parent_id") or m["message_id"] for m in snapshots if m["message_id"] in targets}
+    selected = {m["message_id"]: m for m in snapshots[-limit:]}
+    selected.update({m["message_id"]: m for m in snapshots
+                     if m["message_id"] in targets | roots or m.get("parent_id") in roots})
+    return sorted(selected.values(), key=lambda m: m.get("seq", 0))

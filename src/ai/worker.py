@@ -2,16 +2,18 @@
 
 import argparse
 import logging
+import math
 import time
 from dataclasses import replace
 from datetime import UTC, datetime
+from pathlib import Path
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ai.context import Context
 from ai.dispatcher import dispatch
-from ai.model import Model, NativeModel
+from ai.model import Model, NativeModel, RecordedResponses
 from ai.storage import assemble
 from ai.tools.base import ToolContext
 from ai.tools.registry import registry
@@ -111,6 +113,7 @@ def run_once(db: Session, model: Model, *, debounce_seconds: float = 45, batch_s
             if record["status"] == "executed":
                 record["result"]["output"]["rolled_back"] = True
         db.info.pop("pending_events", None)  # savepoint rolled back its events too
+        db.info.pop("pending_frames", None)  # notifications from rolled-back proposals
     if run:
         db.add_all(AiToolCall(run_id=run.id, **record) for record in records)
     db.flush()
@@ -122,13 +125,29 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--once", action="store_true")
+    parser.add_argument("--source", choices=("postgres", "fixtures"), default="postgres")
+    parser.add_argument("--model", choices=("native", "recorded"), default="native")
+    parser.add_argument("--responses", type=Path, help="Saved calls for --model recorded; otherwise no_action.")
+    parser.add_argument("--fixture-interval", type=float, default=0, help="Seconds between fixture events.")
     parser.add_argument("--debounce", type=float, default=45)
     parser.add_argument("--poll", type=float, default=2)
     args = parser.parse_args()
-    if args.debounce < 0 or args.poll <= 0:
-        parser.error("debounce must be non-negative and poll must be positive")
+    if (not all(math.isfinite(v) for v in (args.debounce, args.poll, args.fixture_interval))
+            or args.debounce < 0 or args.poll <= 0 or args.fixture_interval < 0):
+        parser.error("debounce/fixture-interval must be non-negative and poll positive; all must be finite")
+    if args.responses and args.model != "recorded":
+        parser.error("--responses requires --model recorded")
     logging.basicConfig(level=logging.INFO)
-    model = NativeModel()
+    model = (RecordedResponses.from_path(args.responses) if args.responses else RecordedResponses({})) \
+        if args.model == "recorded" else NativeModel()
+    if args.source == "fixtures":
+        from ai.eval import replay
+
+        print("Fixture source + recording proposal backend; no product writes.")
+        report = replay(lambda _: model, interval=args.fixture_interval, stop_on_failure=True)
+        if report["failed_inputs"]:
+            raise SystemExit(1)
+        return
     while True:
         with session_factory() as db:
             result = run_once(db, model, debounce_seconds=args.debounce)

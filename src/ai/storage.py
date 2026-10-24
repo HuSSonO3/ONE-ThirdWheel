@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ai.context import Context, event_messages
+from ai.context import Context, batch_messages
 from api.access import is_member
 from api.events import _s
 from api.models import AiProposal, Conversation, Department, Event, Message, Task, TaskSource, User
@@ -22,17 +22,11 @@ def assemble(db: Session, conversation: Conversation, batch: list[Event]) -> Con
         Event.conversation_id == conversation.id, Event.id <= batch[-1].id,
         Event.type.in_(["message.created", "message.updated", "message.deleted"]),
     ).order_by(Event.id)))
-    # Include triggering messages and their threads, even outside the recent window.
-    snapshots = event_messages([event_dict(e) for e in history], limit=len(history))
-    new_ids = {str(e.subject_id) for e in batch if e.subject_type == "message"}
-    roots = {m.get("parent_id") or m["message_id"] for m in snapshots if m["message_id"] in new_ids}
-    selected = {m["message_id"]: m for m in snapshots[-30:]}
-    selected.update({m["message_id"]: m for m in snapshots
-                     if m["message_id"] in new_ids | roots or m.get("parent_id") in roots})
+    selected = batch_messages([event_dict(e) for e in history], [event_dict(e) for e in batch])
     # Deleted content must not be sent even during historical replay.
     deleted = {str(i) for i in db.scalars(select(Message.id).where(
         Message.conversation_id == conversation.id, Message.deleted_at.is_not(None)))}
-    messages = [m for i, m in selected.items() if i not in deleted]
+    messages = [m for m in selected if m["message_id"] not in deleted]
     tasks = []
     for task in db.scalars(select(Task).where(Task.source_conversation_id == conversation.id,
                                              Task.status.in_(["open", "in_progress"]))):

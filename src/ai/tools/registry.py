@@ -122,11 +122,11 @@ class PrototypeTool:
                 and p["payload"]["new_status"] == args["new_status"] for p in self.context.proposals)
             kind = "status_change"
         if duplicate:
-            return ToolResult("executed", {"deduplicated": True})
+            return ToolResult("executed", {"deduplicated": True, "proposal": payload})
         ident = ctx.backend.create_proposal(run_id=ctx.run_id, conversation_id=ctx.conversation_id,
                                             kind=kind, payload=payload, confidence=args["confidence"])
         self.context.proposals.append({"kind": kind, "payload": payload})
-        return ToolResult("executed", {"proposal_id": str(ident)})
+        return ToolResult("executed", {"proposal_id": str(ident), "proposal": payload})
 
 
 def registry(context: Context) -> dict[str, PrototypeTool]:

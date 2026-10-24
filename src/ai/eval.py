@@ -7,12 +7,13 @@ python -m ai.eval --responses calls.json  # explicit saved tool calls by message
 
 import argparse
 import json
+import time
 import uuid
-from collections import Counter
 from pathlib import Path
 
-from ai.context import Context, event_messages
-from ai.model import Call, NativeModel, RecordedModel
+from ai.context import Context, batch_messages
+from ai.model import NativeModel, RecordedResponses
+from ai.scoring import Scores
 from ai.storage import RecordingBackend
 from ai.tools.base import DEFAULT_SCOPES, ToolContext
 from ai.worker import process
@@ -53,14 +54,37 @@ def fixture_events() -> list[tuple[dict, dict, str]]:
     return sorted(stream, key=lambda item: item[1]["created_at"])
 
 
-def replay(model_factory, *, verbose: bool = True) -> dict:
+def tasks_at(tasks: list[dict], conversation_id: str, timestamp: str) -> list[dict]:
+    """Reconstruct the fixture's task status before the signal being evaluated."""
+    result = []
+    for task in tasks:
+        if task["source_conversation_id"] != conversation_id or task["created_at"] > timestamp:
+            continue
+        history = sorted(task.get("history", []), key=lambda h: h["changed_at"])
+        changes = [h for h in history if h["field"] == "status"]
+        status = changes[0]["old_value"] if changes else task["status"]
+        for change in changes:
+            if change["changed_at"] < timestamp:
+                status = change["new_value"]
+        if status in ("open", "in_progress"):
+            result.append({"task_id": task["id"], "title": task["title"], "status": status,
+                           "assignee_id": task["assignee_id"], "project": task["project"],
+                           "source_message_ids": task["source_message_ids"]})
+    return result
+
+
+def replay(model_factory, *, verbose: bool = True, interval: float = 0, stop_on_failure: bool = False) -> dict:
     """Labels are loaded only for scoring, never made available to the model."""
     convs = {c["id"]: c for c in load("conversations")}
     departments, users, tasks, suggestions = (load(n) for n in ("departments", "users", "tasks", "suggestions"))
     labels = {c["message_id"]: c for c in load("expected")["cases"]}
     backend, audits, histories = RecordingBackend(), [], {}
-    tp = fp = fn = tool_correct = labelled = skipped = failures = 0
+    scores = Scores()
+    skipped = failures = last_event_id = 0
+    runs, skipped_events = [], []
     for event_id, (message, event, trigger) in enumerate(fixture_events(), 1):
+        if interval:
+            time.sleep(interval)
         event["id"] = event_id
         conv = convs[message["conversation_id"]]
         members = {m["user_id"] for m in conv["members"] if not m.get("left_at")}
@@ -72,53 +96,59 @@ def replay(model_factory, *, verbose: bool = True) -> dict:
             label = None
         if not readable:
             skipped += 1
-            if label:
-                labelled += 1
-                tool_correct += label["expected_tool"] is None
+            skipped_events.append({"event_id": event_id, "conversation_id": conv["id"], "reason": "ai_cannot_read"})
+            scores.observe(label, [], users, skipped=True)
+            last_event_id = event_id
             continue
         history = histories.setdefault(conv["id"], [])
         history.append(event)
         if trigger == "message.deleted":
+            last_event_id = event_id
             continue
         directory = [{k: u.get(k) for k in ("id", "name", "job_title", "department_id", "manager_id", "timezone")}
                      | {"is_member": u["id"] in members} for u in users if u.get("active", True)]
-        open_tasks = [{"task_id": t["id"], **t} for t in tasks
-                      if t["source_conversation_id"] == conv["id"] and t["status"] in ("open", "in_progress")]
+        open_tasks = tasks_at(tasks, conv["id"], event["created_at"])
         pending = [{"kind": p["kind"], "payload": p["payload"]} for p in suggestions
-                   if p["conversation_id"] == conv["id"] and p["status"] == "pending"]
+                   if p["conversation_id"] == conv["id"] and p["created_at"] <= event["created_at"]
+                   and (p["status"] == "pending" or (p.get("decided_at") or "") > event["created_at"])
+                   and p.get("expires_at", "9999") > event["created_at"]]
         pending += [{"kind": p["kind"], "payload": p["payload"]} for p in backend.calls
                     if str(p["conversation_id"]) == conv["id"]]
         context = Context({"id": conv["id"], "kind": conv["kind"], "description": conv["description"]},
-                          [event], event_messages(history), directory, open_tasks, pending,
+                          [event], batch_messages(history, [event]), directory, open_tasks, pending,
                           sorted({t["project"] for t in tasks if t["project"]
                                   and t["source_conversation_id"] == conv["id"]}), departments)
         before = len(audits)
+        writes_before = len(backend.calls)
+        run_id = uuid.uuid4()
+        status = "succeeded"
         try:
             process(context, model_factory(message["id"]), ToolContext(
-                uuid.uuid4(), uuid.UUID(conv["id"]), DEFAULT_SCOPES, backend), audits.append)
+                run_id, uuid.UUID(conv["id"]), DEFAULT_SCOPES, backend), audits.append)
         except (RuntimeError, ValueError):
             failures += 1
+            status = "failed"
+            del backend.calls[writes_before:]
         chosen = audits[before:]
-        predicted = sum(c["tool_name"] == "propose_task" for c in chosen)
-        expected = 0 if not label or label["expected_tool"] != "propose_task" else \
-            len(label["expected"].get("calls", [None]))
-        tp += min(predicted, expected)
-        fp += max(0, predicted - expected)
-        fn += max(0, expected - predicted)
-        if label:
-            labelled += 1
-            tool_correct += any(c["tool_name"] == label["expected_tool"] for c in chosen)
-            if verbose:
-                print(f"{label['case']:27} expected={label['expected_tool']:24} "
-                      f"actual={','.join(c['tool_name'] + ':' + c['status'] for c in chosen) or 'error'}")
+        if status == "failed":
+            for record in chosen:
+                if record["status"] == "executed":
+                    record["result"]["output"]["rolled_back"] = True
+        runs.append({"run_id": str(run_id), "from_event_id": event_id, "to_event_id": event_id,
+                     "status": status, "tool_calls": chosen})
+        scores.observe(label, chosen, users)
+        if status == "failed" and stop_on_failure:
+            break
+        if status == "succeeded":
+            last_event_id = event_id
     report = {"messages": len(load("messages")), "skipped": skipped, "failed_inputs": failures,
-              "task_precision": tp / (tp + fp) if tp + fp else 0.0,
-              "task_recall": tp / (tp + fn) if tp + fn else 0.0,
-              "labelled_tool_accuracy": tool_correct / labelled if labelled else 0.0,
-              "tool_choices": dict(Counter(c["tool_name"] for c in audits)),
-              "recorded_proposals": len(backend.calls)}
+              **scores.report(), "recorded_proposals": len(backend.calls),
+              "last_event_id": last_event_id, "runs": runs, "skipped_events": skipped_events}
     if verbose:
-        print(json.dumps(report, indent=2))
+        for row in scores.rows:
+            print(f"{row['case']:27} expected={str(row['expected']):24} "
+                  f"actual={','.join(row['actual']) or 'skipped'} arguments={row['arguments_correct']}")
+        print(json.dumps({k: v for k, v in report.items() if k not in ("runs", "cases", "skipped_events")}, indent=2))
     return report
 
 
@@ -127,16 +157,18 @@ def main() -> None:
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--live", action="store_true")
     group.add_argument("--responses", type=Path)
+    parser.add_argument("--output", type=Path, help="Write full run/tool/case results as JSON.")
     args = parser.parse_args()
     if args.live:
         model = NativeModel()
         print("LIVE model evaluation; sends AI-readable fixture conversations to the configured provider.")
-        replay(lambda _: model)
+        report = replay(lambda _: model)
     else:
-        saved = json.loads(args.responses.read_text()) if args.responses else {}
-        print("RECORDED replay" if saved else "NO-ACTION BASELINE — pipeline smoke test, not model quality.")
-        replay(lambda ident: RecordedModel([Call(c["name"], c["arguments"]) for c in saved.get(
-            ident, [{"name": "no_action", "arguments": {"reason": "Offline baseline"}}])]))
+        model = RecordedResponses.from_path(args.responses) if args.responses else RecordedResponses({})
+        print("RECORDED replay" if args.responses else "NO-ACTION BASELINE — pipeline smoke test, not model quality.")
+        report = replay(lambda _: model)
+    if args.output:
+        args.output.write_text(json.dumps(report, indent=2) + "\n")
 
 
 if __name__ == "__main__":

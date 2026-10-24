@@ -35,10 +35,21 @@ calls. This code does not provision a model account or call a model during tests
 ```sh
 uv run python -m ai.worker --once --debounce 0
 uv run python -m ai.worker
+uv run python -m ai.worker --source fixtures --model recorded --fixture-interval 0.01
+uv run python -m ai.worker --source postgres --model recorded --responses saved.json --once --debounce 0
 uv run pytest ai/tests
 uv run python -m ai.eval
 uv run python -m ai.eval --live
+uv run python -m ai.eval --responses ai/tests/data/reference_calls.json
 ```
+
+`--source fixtures` swaps the event source for timed shared-fixture replay and
+the write boundary for `RecordingBackend`; it never writes product data. Use
+`--model recorded` for deterministic tests without a provider key; pass
+`--responses` for saved native tool calls. The same `process`/tools/dispatcher
+execute in both modes. `--source postgres` selects the real event consumer and
+existing `ServiceBackend`, without changing code. A failed fixture-worker input
+rolls back recorded proposals and stops before advancing its in-memory cursor.
 
 The default seed places the cursor at the end of history. To replay seed messages,
 use the existing `scripts/seed.py --reset --ai-from-start` on a **disposable dev
@@ -62,18 +73,42 @@ in this AI-only PR.
 
 `ai.eval` replays all shared fixture messages, edits, deletions and reactions through
 the same tools, using a recording proposal backend. It prints task-selection
-precision/recall, labelled tool accuracy, statuses and counts. Labels are used only
-for scoring; the model never receives `expected.json`.
+precision/recall, labelled tool and argument accuracy, per-case outcomes, statuses
+and counts. `--output report.json` saves every run, tool call, and skip reason.
+Labels are used only for scoring; the model never receives `expected.json`.
 
 Default mode is deliberately a **no-action baseline**, not evidence of model
-quality. `--responses saved.json` replays explicitly saved calls, keyed by source
+quality. `ai/tests/data/reference_calls.json` is a small hand-authored regression
+sample exercising all six tools, multi-task extraction, old-source reactions and
+non-member assignment; it is **not** a recording of native-provider performance.
+`--responses saved.json` replays explicitly saved calls, keyed by source
 message ID, e.g. `{"<id>":[{"name":"no_action","arguments":{"reason":"FYI"}}]}`.
+Use `<id>:message.updated` or `<id>:reaction.added` for an event-specific response;
+bare message-ID recordings apply only to `message.created`, never to later edits
+or reactions.
 `--live` makes billable requests to the configured model; fixture consent rules
-still apply. Tool-selection scores count calls before dedupe, including denials.
-They do not measure assignment/date correctness. Current fixtures provide final
-task/proposal state rather than historical snapshots, so completion cases whose
-task is already done may be unavailable to the model. Do not interpret this
-fixture smoke replay as a calibrated production benchmark.
+still apply. Tool-selection scores include stub scope denials as correct selections
+when appropriate. Task precision/recall uses one-to-one matches of executed proposal
+arguments (before dedupe): wrong assignees or dates count as false positives and
+misses, and repeated calls cannot cover multiple tasks. Argument checks also cover
+non-member flags, projects, status targets, leave dates, amounts/currencies and
+meeting attendees/duration. The fixture source reconstructs task status from its
+history before each signal, so final `done` state does not hide completion cases.
+This remains a synthetic fixture evaluation, not a calibrated production benchmark.
+
+### Plan §4.3 verification
+
+- `pytest ai/tests`: schemas/scopes/stubs, assignment and non-member flags,
+  dedupe, failure/cursor behavior, consent, native provider request/retry parsing,
+  full timed fixture replay, source/model configuration and argument scoring.
+- Existing seeded Postgres tests exercise the real backend service boundary.
+- `ai/tests/test_api_boundary.py` is an opt-in check against the **unchanged**
+  API in Docker: HTTP message → recorded-config worker → suggestion visible via
+  HTTP → human acceptance. It requires `AI_DOCKER_TEST_API_URL` and `DATABASE_URL`
+  for the **same disposable test deployment**; it creates and accepts a test task.
+  It is skipped in ordinary runs and never changes API code or startup.
+- Live-model extraction quality still requires a configured `OPENAI_API_KEY`.
+  Recorded test results are never presented as native-model accuracy.
 
 ## Deliberate limits
 
