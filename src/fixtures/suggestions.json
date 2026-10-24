@@ -1,1 +1,251 @@
-[]
+[
+  {
+    "id": "c1cfff6b-297f-53ff-8253-7b48631aa579",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "task",
+    "payload": {
+      "title": "Fix the signup button 500 on the pricing page",
+      "description_md": "",
+      "assignee_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+      "assignee_is_member": true,
+      "project": "website",
+      "due_at": "2026-10-22T10:00:00Z",
+      "source_message_ids": [
+        "6afd80d0-83f7-5dd8-bbfe-0341c9d27583"
+      ]
+    },
+    "confidence": 0.93,
+    "status": "accepted",
+    "applied_task_id": "8277b003-0577-59b1-b073-67d077d84e1b",
+    "decided_by": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+    "decided_at": "2026-10-19T02:15:00Z",
+    "created_at": "2026-10-19T02:14:00Z",
+    "expires_at": "2026-10-26T02:14:00Z"
+  },
+  {
+    "id": "e62d8109-6f85-5c03-a0b5-09e849e844fe",
+    "conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "kind": "task",
+    "payload": {
+      "title": "Write migration notes",
+      "description_md": "",
+      "assignee_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+      "assignee_is_member": true,
+      "project": null,
+      "due_at": null,
+      "source_message_ids": [
+        "68e070bb-08ce-5540-b244-a219a75e50f1"
+      ]
+    },
+    "confidence": 0.88,
+    "status": "modified",
+    "applied_task_id": "02337e5f-6b54-5671-a737-96e43031c96f",
+    "decided_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "decided_at": "2026-10-20T02:55:00Z",
+    "created_at": "2026-10-20T02:17:00Z",
+    "expires_at": "2026-10-27T02:17:00Z"
+  },
+  {
+    "id": "b6ca1bcc-f697-59e2-86c5-20d5c3a1416b",
+    "conversation_id": "0373b2a0-698c-55db-94a4-d4740065da13",
+    "kind": "task",
+    "payload": {
+      "title": "Deliver three logo directions",
+      "description_md": "",
+      "assignee_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+      "assignee_is_member": true,
+      "project": "brand-refresh",
+      "due_at": null,
+      "source_message_ids": [
+        "dfa05d51-4ae3-59b1-a9a8-5056c44fa300"
+      ]
+    },
+    "confidence": 0.9,
+    "status": "accepted",
+    "applied_task_id": "de226079-9985-5fa2-b3a0-cfa89b5bf202",
+    "decided_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "decided_at": "2026-10-13T07:17:00Z",
+    "created_at": "2026-10-13T07:07:00Z",
+    "expires_at": "2026-10-20T07:07:00Z"
+  },
+  {
+    "id": "8f64c256-42fa-53f7-82de-da38491b79c9",
+    "conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "kind": "task",
+    "payload": {
+      "title": "Set up error-budget dashboard in Grafana",
+      "description_md": "",
+      "assignee_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+      "assignee_is_member": true,
+      "project": "infra",
+      "due_at": null,
+      "source_message_ids": [
+        "e8504954-7ec4-5eb3-883d-1f0ba6c8a846"
+      ]
+    },
+    "confidence": 0.86,
+    "status": "accepted",
+    "applied_task_id": "7b1ee1ae-873b-58eb-af1f-ed63fe9f18b8",
+    "decided_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "decided_at": "2026-10-12T03:17:00Z",
+    "created_at": "2026-10-12T03:07:00Z",
+    "expires_at": "2026-10-19T03:07:00Z"
+  },
+  {
+    "id": "ff9fc67b-0bb7-5bfe-9baf-4eeea3fa6411",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "task",
+    "payload": {
+      "title": "Update the GA4 analytics snippet on the landing page",
+      "description_md": "",
+      "assignee_id": "a8ce3642-196f-53ef-9ecc-f722b2174f4b",
+      "assignee_is_member": false,
+      "project": "website",
+      "due_at": null,
+      "source_message_ids": [
+        "6a44d87e-b3e4-5ce5-b882-63a192dcf5d3"
+      ]
+    },
+    "confidence": 0.84,
+    "status": "pending",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": null,
+    "created_at": "2026-10-20T06:22:00Z",
+    "expires_at": "2026-10-27T06:22:00Z"
+  },
+  {
+    "id": "0018830c-2380-5f27-a952-f53170f84932",
+    "conversation_id": "02df59e8-4dcc-56be-b269-d9c6f7032df4",
+    "kind": "task",
+    "payload": {
+      "title": "Reconcile September Stripe payouts against the ledger",
+      "description_md": "",
+      "assignee_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+      "assignee_is_member": true,
+      "project": "payments",
+      "due_at": null,
+      "source_message_ids": [
+        "006d2783-75d3-51bc-ab53-79620d91e64d"
+      ]
+    },
+    "confidence": 0.91,
+    "status": "pending",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": null,
+    "created_at": "2026-10-21T06:32:00Z",
+    "expires_at": "2026-10-28T06:32:00Z"
+  },
+  {
+    "id": "8a6caa43-8873-54fd-9ad9-2d6a4244455e",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "task",
+    "payload": {
+      "title": "Mock up the dashboard empty state",
+      "description_md": "",
+      "assignee_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+      "assignee_is_member": true,
+      "project": null,
+      "due_at": null,
+      "source_message_ids": [
+        "4a7cb327-5071-5a67-ac49-9b7ba41ce19d"
+      ]
+    },
+    "confidence": 0.62,
+    "status": "pending",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": null,
+    "created_at": "2026-10-21T07:12:00Z",
+    "expires_at": "2026-10-28T07:12:00Z"
+  },
+  {
+    "id": "c890f027-799c-50cd-b428-583cecd7a7c4",
+    "conversation_id": "4d86c7f6-c8bc-5546-904e-f3d0b0eeb255",
+    "kind": "task",
+    "payload": {
+      "title": "Prepare the November on-call rota",
+      "description_md": "",
+      "assignee_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+      "assignee_is_member": true,
+      "project": null,
+      "due_at": "2026-10-28T10:00:00Z",
+      "source_message_ids": [
+        "452cc9e2-453f-555c-976b-c68add862ed6"
+      ]
+    },
+    "confidence": 0.89,
+    "status": "pending",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": null,
+    "created_at": "2026-10-21T01:32:00Z",
+    "expires_at": "2026-10-28T01:32:00Z"
+  },
+  {
+    "id": "fed4dc0a-e172-56b1-983d-21aa3a40aba5",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "task",
+    "payload": {
+      "title": "Redesign the homepage",
+      "description_md": "",
+      "assignee_id": null,
+      "assignee_is_member": false,
+      "project": null,
+      "due_at": null,
+      "source_message_ids": [
+        "385b94d0-1fa0-594a-8e85-d662bd240ff8"
+      ]
+    },
+    "confidence": 0.31,
+    "status": "rejected",
+    "applied_task_id": null,
+    "decided_by": "9043397e-40ba-5bad-b517-1d63d8df4532",
+    "decided_at": "2026-10-19T04:07:00Z",
+    "created_at": "2026-10-19T03:42:00Z",
+    "expires_at": "2026-10-26T03:42:00Z"
+  },
+  {
+    "id": "019e9fce-29cd-50b5-8a2f-c1af2f27be02",
+    "conversation_id": "dff9e34f-0372-5e88-ade7-736cb95bf761",
+    "kind": "task",
+    "payload": {
+      "title": "Update brand colours in the email template",
+      "description_md": "",
+      "assignee_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+      "assignee_is_member": true,
+      "project": null,
+      "due_at": null,
+      "source_message_ids": [
+        "310def9f-cc08-594f-8c11-a4cf01795dfa"
+      ]
+    },
+    "confidence": 0.45,
+    "status": "expired",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": "2026-10-19T07:02:00Z",
+    "created_at": "2026-10-12T07:02:00Z",
+    "expires_at": "2026-10-19T07:02:00Z"
+  },
+  {
+    "id": "a4df24cc-a049-5397-8a52-c21e8f42933f",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "status_change",
+    "payload": {
+      "task_id": "8277b003-0577-59b1-b073-67d077d84e1b",
+      "new_status": "done",
+      "source_message_ids": [
+        "55e3902b-e5fa-5fd6-ad7f-e3d6460151f0"
+      ]
+    },
+    "confidence": 0.95,
+    "status": "pending",
+    "applied_task_id": null,
+    "decided_by": null,
+    "decided_at": null,
+    "created_at": "2026-10-21T08:04:00Z",
+    "expires_at": "2026-10-28T08:04:00Z"
+  }
+]

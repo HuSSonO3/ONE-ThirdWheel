@@ -1,0 +1,277 @@
+{
+  "description": "Labels for the AI eval harness. Messages in AI-readable conversations that are not listed here expect no_action. `already_tracked_by` means a task or suggestion already covers it, so after dedupe the worker should create nothing new.",
+  "default_tool": "no_action",
+  "cases": [
+    {
+      "case": "clear_ask",
+      "message_id": "6afd80d0-83f7-5dd8-bbfe-0341c9d27583",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "due_at": "2026-10-22",
+        "already_tracked_by": "task:t1"
+      },
+      "note": "Explicit @mention, clear action and deadline."
+    },
+    {
+      "case": "closes_task",
+      "message_id": "55e3902b-e5fa-5fd6-ad7f-e3d6460151f0",
+      "trigger": "message",
+      "expected_tool": "propose_status_change",
+      "expected": {
+        "task_id": "8277b003-0577-59b1-b073-67d077d84e1b",
+        "new_status": "done"
+      },
+      "note": "'Done, shipped it' in the thread of the task's source."
+    },
+    {
+      "case": "not_a_task",
+      "message_id": "385b94d0-1fa0-594a-8e85-d662bd240ff8",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "Wishful 'someday', no owner, no commitment. The AI proposed it once and it was rejected (suggestion s9)."
+    },
+    {
+      "case": "not_a_task_joke",
+      "message_id": "7c155378-e847-5b84-8d7b-d399dd673e3f",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "Joke in #random."
+    },
+    {
+      "case": "past_action",
+      "message_id": "50f0e775-5ee1-5368-9df8-f8d307ff6ac4",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "Reports something already done."
+    },
+    {
+      "case": "question",
+      "message_id": "042df45e-6f5d-5ab8-b9e8-c4b46cbf8b32",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "A question, not a request for work."
+    },
+    {
+      "case": "non_member",
+      "message_id": "6a44d87e-b3e4-5ce5-b882-63a192dcf5d3",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "a8ce3642-196f-53ef-9ecc-f722b2174f4b",
+        "assignee_is_member": false,
+        "already_tracked_by": "suggestion:s5"
+      },
+      "note": "Ethan is not a member of #website; card must show the non-member state."
+    },
+    {
+      "case": "dm_one_sided_opt_in",
+      "message_id": "6deaa01f-cd05-5467-a238-118e762cace9",
+      "trigger": "message",
+      "expected_tool": null,
+      "expected": {
+        "skipped": "ai_cannot_read"
+      },
+      "note": "Bob has not opted in; ai_can_read is false, the event is skipped."
+    },
+    {
+      "case": "dm_opted_in",
+      "message_id": "452cc9e2-453f-555c-976b-c68add862ed6",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "due_at": "2026-10-28",
+        "already_tracked_by": "suggestion:s8"
+      },
+      "note": "Both opted in; task spawned in the DM."
+    },
+    {
+      "case": "department_mention",
+      "message_id": "e2a447e3-4ab9-55de-b27a-c1435a9c7a32",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_in": [
+          "a46c517c-e1d8-5094-8761-f8bbd6810340",
+          "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+          "95929db8-5891-5e09-80dc-86973d11ca5f",
+          "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+          "0a59a542-6a65-50b6-9103-b2b35700afb5"
+        ],
+        "due_at": "2026-10-28",
+        "project": "brand-refresh"
+      },
+      "note": "Department mention; resolve within Design, members of the channel preferred."
+    },
+    {
+      "case": "name_match",
+      "message_id": "006d2783-75d3-51bc-ab53-79620d91e64d",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "project": "payments",
+        "already_tracked_by": "suggestion:s6"
+      },
+      "note": "Named in text, no @mention; project already exists."
+    },
+    {
+      "case": "someone_from_department",
+      "message_id": "4a7cb327-5071-5a67-ac49-9b7ba41ce19d",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_in": [
+          "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+          "95929db8-5891-5e09-80dc-86973d11ca5f"
+        ],
+        "already_tracked_by": "suggestion:s7"
+      },
+      "note": "Narrow to Design members in the channel."
+    },
+    {
+      "case": "task_with_code",
+      "message_id": "94742af6-141c-5888-8ee0-8e36cca591aa",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "due_at": "2026-10-22",
+        "already_tracked_by": "task:t_p10"
+      },
+      "note": "Ask with a code block; already turned into a task manually."
+    },
+    {
+      "case": "code_not_a_task",
+      "message_id": "74027653-ce30-5de8-a04f-0bd916a56f21",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "Sharing a snippet."
+    },
+    {
+      "case": "reaction_closes_task",
+      "message_id": "33a05931-b769-59f5-a6a0-023996773290",
+      "trigger": "reaction:✅",
+      "expected_tool": "propose_status_change",
+      "expected": {
+        "task_id": "60a6039b-5ab1-51c4-ba11-2e0ee669f707",
+        "new_status": "done"
+      },
+      "note": "Assignee reacted ✅ to the task's source message."
+    },
+    {
+      "case": "leave_request",
+      "message_id": "0ba99736-34be-5b42-b08b-1ff914e4f990",
+      "trigger": "message",
+      "expected_tool": "request_leave",
+      "expected": {
+        "start_date": "2026-11-03",
+        "end_date": "2026-11-05"
+      },
+      "note": "Stub tool; scope not granted by default -> denied."
+    },
+    {
+      "case": "expense_claim",
+      "message_id": "b28b1127-9761-5ebe-bc0a-8628cb9debc5",
+      "trigger": "message",
+      "expected_tool": "submit_claim",
+      "expected": {
+        "amount": 84.5,
+        "currency": "EUR"
+      },
+      "note": "Stub tool."
+    },
+    {
+      "case": "meeting",
+      "message_id": "950ccf60-ff42-518a-b2ca-478c217576dc",
+      "trigger": "message",
+      "expected_tool": "schedule_meeting",
+      "expected": {
+        "attendee_ids": [
+          "88c3948e-3435-538e-bba8-59d0d965df0f",
+          "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+          "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02"
+        ],
+        "duration_minutes": 30
+      },
+      "note": "Stub tool."
+    },
+    {
+      "case": "ai_disabled_channel",
+      "message_id": "ea80db63-448d-523f-ae7c-3b1fbd610246",
+      "trigger": "message",
+      "expected_tool": null,
+      "expected": {
+        "skipped": "ai_cannot_read"
+      },
+      "note": "#hiring has ai_enabled = false."
+    },
+    {
+      "case": "two_tasks",
+      "message_id": "fbc86fb2-5186-5dfe-965b-f42c627c6b3d",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "calls": [
+          {
+            "assignee_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+            "due_at": "2026-10-21"
+          },
+          {
+            "assignee_id": "4dd7f2fc-8538-5488-8719-0a291382d61d"
+          }
+        ],
+        "already_tracked_by": "task:t_p21a,task:t_p21b"
+      },
+      "note": "Two propose_task calls from one message."
+    },
+    {
+      "case": "edited_into_task",
+      "message_id": "754a74ab-4d8b-5a0c-b017-ad00be406d8c",
+      "trigger": "message.updated",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "9043397e-40ba-5bad-b517-1d63d8df4532",
+        "due_at": "2026-10-23"
+      },
+      "note": "message.updated with prior_body_md; the edit names Lucia."
+    },
+    {
+      "case": "thread_ask",
+      "message_id": "68e070bb-08ce-5540-b244-a219a75e50f1",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "already_tracked_by": "task:t_p24"
+      },
+      "note": "Ask inside a thread; context is the thread."
+    },
+    {
+      "case": "self_commitment",
+      "message_id": "3a93b507-503f-5638-8ebf-9ec87ea495c1",
+      "trigger": "message",
+      "expected_tool": "propose_task",
+      "expected": {
+        "assignee_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "already_tracked_by": "task:t_p26"
+      },
+      "note": "The author commits to a task for themselves."
+    },
+    {
+      "case": "observation",
+      "message_id": "310def9f-cc08-594f-8c11-a4cf01795dfa",
+      "trigger": "message",
+      "expected_tool": "no_action",
+      "expected": {},
+      "note": "An observation with no ask; its suggestion expired untouched."
+    }
+  ]
+}

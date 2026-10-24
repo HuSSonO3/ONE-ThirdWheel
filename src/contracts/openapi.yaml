@@ -1,27 +1,1639 @@
 openapi: 3.1.0
 info:
   title: Company Chat API
-  version: 0.0.1
-# Phase 0 Day 2: add every endpoint from the feature spec (plan.md §3).
+  version: 0.1.0
+  description: |
+    REST contract for the company chat + AI task assistant (feature_spec.md).
+    Real-time events are in ws-events.md; the event log row is in events-row.md.
+
+    Conventions:
+    - Auth is a server-side session in the `session` cookie (set by POST /auth/login).
+    - Every error body is `Error`. `code` is a stable machine string; `message` is for humans.
+    - Ids are UUIDs except `events.id` and message `seq` (int64).
+    - Timestamps are RFC 3339 with timezone.
+    - Every read of a conversation, message, file or embed runs `can_access` for the caller;
+      every task read runs `can_see`. A failed check on a known resource returns 403 `forbidden`,
+      except embeds, which return 200 with `type: forbidden` so the client can render the stub.
+servers:
+  - url: http://localhost:8000
+security:
+  - session: []
+
+tags:
+  - name: system
+  - name: auth
+  - name: users
+  - name: departments
+  - name: conversations
+  - name: members
+  - name: messages
+  - name: reactions
+  - name: files
+  - name: embeds
+  - name: search
+  - name: read-cursors
+  - name: notifications
+  - name: tasks
+  - name: suggestions
+  - name: commands
+  - name: admin
+
 paths:
   /health:
     get:
+      tags: [system]
       operationId: health
+      security: []
       responses:
         "200":
           description: OK
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string }
-                required: [status]
+              schema: { $ref: "#/components/schemas/Health" }
+
+  # ---------------------------------------------------------------- auth (1.1)
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Logged in. Sets the `session` cookie.
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      responses:
+        "204": { description: Session deleted and cookie cleared. }
+  /auth/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      responses:
+        "200":
+          description: The current user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ---------------------------------------------------------------- users (1.2, 1.3, 2.4)
+  /users:
+    get:
+      tags: [users]
+      operationId: listUsers
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Prefix match on name or email. }
+        - { name: department_id, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: include_inactive, in: query, schema: { type: boolean, default: false } }
+      responses:
+        "200":
+          description: Users (directory; used by mention autocomplete and pickers).
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/User" } }
+    post:
+      tags: [users, admin]
+      operationId: createUser
+      description: Admin only. No self-signup.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserCreate" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /users/{user_id}:
+    parameters: [{ $ref: "#/components/parameters/UserId" }]
+    get:
+      tags: [users]
+      operationId: getUser
+      responses:
+        "200":
+          description: Profile card data, including direct reports.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserProfile" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [users]
+      operationId: updateUser
+      description: |
+        Self may change name, job_title, avatar_file_id, timezone. Admin may also change email,
+        role, manager_id (cycle-checked; 409 `manager_cycle`), department_id (moves department
+        channel membership), active and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /users/{user_id}/tasks:
+    parameters: [{ $ref: "#/components/parameters/UserId" }]
+    get:
+      tags: [tasks, users]
+      operationId: listUserTasks
+      description: The personal task dashboard (2.4). Allowed when user_id is the caller or a subordinate.
+      parameters:
+        - { $ref: "#/components/parameters/ProjectFilter" }
+        - { $ref: "#/components/parameters/StatusFilter" }
+      responses:
+        "200":
+          description: Tasks assigned to the user.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Task" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /me/subordinates:
+    get:
+      tags: [users]
+      operationId: listMySubordinates
+      description: Everyone below the caller in the org tree, for the dashboard picker.
+      responses:
+        "200":
+          description: Subordinates, nearest first.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/UserSummary" } }
+
+  # ---------------------------------------------------------------- departments (1.4)
+  /departments:
+    get:
+      tags: [departments]
+      operationId: listDepartments
+      responses:
+        "200":
+          description: All departments.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Department" } }
+    post:
+      tags: [departments, admin]
+      operationId: createDepartment
+      description: Admin only. Also creates the department's `department` conversation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DepartmentWrite" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Department" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /departments/{department_id}:
+    parameters: [{ $ref: "#/components/parameters/DepartmentId" }]
+    get:
+      tags: [departments]
+      operationId: getDepartment
+      responses:
+        "200":
+          description: The department and its members.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DepartmentDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [departments, admin]
+      operationId: updateDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DepartmentWrite" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Department" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- conversations (1.5, 1.6)
+  /conversations:
+    get:
+      tags: [conversations]
+      operationId: listConversations
+      parameters:
+        - name: scope
+          in: query
+          description: "`mine` = conversations the caller is a member of (sidebar). `browse` = public channels (join dialog)."
+          schema: { type: string, enum: [mine, browse], default: mine }
+        - { name: include_archived, in: query, schema: { type: boolean, default: false } }
+      responses:
+        "200":
+          description: Conversations with the caller's unread count.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Conversation" } }
+    post:
+      tags: [conversations]
+      operationId: createConversation
+      description: |
+        `kind: channel` creates a channel with the caller as owner plus `member_ids`.
+        `kind: dm` finds or creates the DM between the caller and the single id in `member_ids`
+        (200 if it existed, 201 if created). Department conversations are created only with
+        their department.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConversationCreate" }
+      responses:
+        "200":
+          description: Existing DM returned.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /conversations/{conversation_id}:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    get:
+      tags: [conversations]
+      operationId: getConversation
+      responses:
+        "200":
+          description: The conversation.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [conversations]
+      operationId: updateConversation
+      description: Channel owners only; not allowed on DMs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConversationUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /conversations/{conversation_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    post:
+      tags: [conversations]
+      operationId: archiveConversation
+      description: Channel owners or admin. Archived channels are read-only.
+      responses:
+        "200":
+          description: Archived.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /conversations/{conversation_id}/join:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    post:
+      tags: [members]
+      operationId: joinConversation
+      description: Public channels only.
+      responses:
+        "200":
+          description: Joined (idempotent).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /conversations/{conversation_id}/leave:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    post:
+      tags: [members]
+      operationId: leaveConversation
+      description: Channels only; closes the membership row with `left_at`. 409 `cannot_leave` for department channels and DMs.
+      responses:
+        "204": { description: Left. }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /conversations/{conversation_id}/members:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    get:
+      tags: [members]
+      operationId: listMembers
+      parameters:
+        - { name: include_former, in: query, schema: { type: boolean, default: false } }
+      responses:
+        "200":
+          description: Current (and optionally former) members.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Member" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [members]
+      operationId: addMembers
+      description: Invite users to a channel. Any member may invite. Not allowed on DMs or department channels.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddMembersRequest" }
+      responses:
+        "200":
+          description: The resulting member list.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Member" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /conversations/{conversation_id}/members/{user_id}:
+    parameters:
+      - { $ref: "#/components/parameters/ConversationId" }
+      - { $ref: "#/components/parameters/UserId" }
+    delete:
+      tags: [members]
+      operationId: removeMember
+      description: Channel owners only. Closes the row with `left_at`.
+      responses:
+        "204": { description: Removed. }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /conversations/{conversation_id}/membership:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    patch:
+      tags: [members]
+      operationId: updateMyMembership
+      description: The caller's own settings in this conversation. `ai_opt_in` is the DM "Allow AI" toggle (3.5).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ---------------------------------------------------------------- messages & threads (1.7, 1.8)
+  /conversations/{conversation_id}/messages:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    get:
+      tags: [messages]
+      operationId: listMessages
+      description: |
+        Top-level messages (no thread replies, except replies sent "also to channel") ordered by
+        `seq` ascending. Use `before_seq` to page upward and `after_seq` to fill a gap after reconnect.
+        Deleted messages are returned with `deleted_at` set and an empty body.
+      parameters:
+        - { name: before_seq, in: query, schema: { type: integer, format: int64 } }
+        - { name: after_seq, in: query, schema: { type: integer, format: int64 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        "200":
+          description: A page of messages.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessagePage" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [messages]
+      operationId: createMessage
+      description: |
+        Idempotent on (`author`, `client_id`): a retry returns the original message with 200.
+        Server assigns `seq`, extracts mentions and internal links, writes a `message.created`
+        event, and broadcasts it. Text starting with `/` must go to POST /commands instead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MessageCreate" }
+      responses:
+        "200":
+          description: Duplicate `client_id`; the original message.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /messages/{message_id}:
+    parameters: [{ $ref: "#/components/parameters/MessageId" }]
+    get:
+      tags: [messages]
+      operationId: getMessage
+      responses:
+        "200":
+          description: The message.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [messages]
+      operationId: editMessage
+      description: Author only. Stores the prior body in `message_edits`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MessageUpdate" }
+      responses:
+        "200":
+          description: Edited.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      tags: [messages]
+      operationId: deleteMessage
+      description: Author or admin. Soft delete.
+      responses:
+        "204": { description: Deleted. }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /messages/{message_id}/thread:
+    parameters: [{ $ref: "#/components/parameters/MessageId" }]
+    get:
+      tags: [messages]
+      operationId: getThread
+      responses:
+        "200":
+          description: The parent and all replies in `seq` order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Thread" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- reactions (1.12)
+  /messages/{message_id}/reactions/{emoji}:
+    parameters:
+      - { $ref: "#/components/parameters/MessageId" }
+      - name: emoji
+        in: path
+        required: true
+        description: A single Unicode emoji, URL-encoded.
+        schema: { type: string }
+    put:
+      tags: [reactions]
+      operationId: addReaction
+      responses:
+        "200":
+          description: Reaction present (idempotent). Returns the message's reaction summary.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReactionSummary" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      tags: [reactions]
+      operationId: removeReaction
+      responses:
+        "200":
+          description: Reaction absent (idempotent). Returns the message's reaction summary.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReactionSummary" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ---------------------------------------------------------------- files & snippets (1.13, 1.14)
+  /files:
+    post:
+      tags: [files]
+      operationId: uploadFile
+      description: |
+        Upload before sending the message, then pass the id in `MessageCreate.file_ids`.
+        A snippet is an upload with `kind: snippet` and `language`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                conversation_id: { $ref: "#/components/schemas/Uuid" }
+                kind: { type: string, enum: [file, image, snippet, avatar], default: file }
+                name: { type: string, description: Overrides the uploaded filename (snippet title). }
+                language: { type: string }
+              required: [file]
+      responses:
+        "201":
+          description: Stored.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FileMeta" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "413": { $ref: "#/components/responses/ValidationError" }
+  /files/{file_id}:
+    parameters: [{ $ref: "#/components/parameters/FileId" }]
+    get:
+      tags: [files]
+      operationId: downloadFile
+      description: Streams the bytes after `can_access` on the owning conversation.
+      parameters:
+        - { name: thumbnail, in: query, schema: { type: boolean, default: false } }
+      responses:
+        "200":
+          description: File content.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /files/{file_id}/meta:
+    parameters: [{ $ref: "#/components/parameters/FileId" }]
+    get:
+      tags: [files]
+      operationId: getFileMeta
+      responses:
+        "200":
+          description: Metadata.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FileMeta" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /files/{file_id}/preview:
+    parameters: [{ $ref: "#/components/parameters/FileId" }]
+    get:
+      tags: [files]
+      operationId: getSnippetPreview
+      parameters:
+        - { name: lines, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 20 } }
+      responses:
+        "200":
+          description: The first N lines of a snippet.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SnippetPreview" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ---------------------------------------------------------------- embeds (1.15, 2.5)
+  /embeds:
+    get:
+      tags: [embeds]
+      operationId: resolveEmbed
+      description: |
+        Resolves an internal link (`/c/{conversation_id}`, `/c/{conversation_id}/m/{message_id}`,
+        `/t/{task_id}`) for the requesting viewer. Never 403: a failed check returns
+        `type: forbidden` with no details.
+      parameters:
+        - { name: url, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: The embed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Embed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  # ---------------------------------------------------------------- search (1.18)
+  /search:
+    get:
+      tags: [search]
+      operationId: search
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 1 } }
+        - { name: from, in: query, schema: { $ref: "#/components/schemas/Uuid" }, description: Author id (`from:`). }
+        - { name: in, in: query, schema: { $ref: "#/components/schemas/Uuid" }, description: Conversation id (`in:`). }
+        - { name: has_file, in: query, schema: { type: boolean } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+      responses:
+        "200":
+          description: Hits the caller can access, best first.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SearchHit" } }
+
+  # ---------------------------------------------------------------- read cursors (1.16)
+  /conversations/{conversation_id}/read:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    put:
+      tags: [read-cursors]
+      operationId: markRead
+      description: Moves the cursor forward only; broadcasts `read_cursor.updated` to the caller's other tabs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MarkReadRequest" }
+      responses:
+        "200":
+          description: The resulting cursor.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReadCursor" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /me/read-cursors:
+    get:
+      tags: [read-cursors]
+      operationId: listMyReadCursors
+      responses:
+        "200":
+          description: Cursors for every conversation the caller is in.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReadCursor" } }
+
+  # ---------------------------------------------------------------- notifications (1.19)
+  /notifications:
+    get:
+      tags: [notifications]
+      operationId: listNotifications
+      parameters:
+        - { name: unread_only, in: query, schema: { type: boolean, default: false } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        "200":
+          description: Newest first.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Notification" } }
+  /notifications/{notification_id}/read:
+    parameters:
+      - { name: notification_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    post:
+      tags: [notifications]
+      operationId: markNotificationRead
+      responses:
+        "204": { description: Marked read. }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /notifications/read-all:
+    post:
+      tags: [notifications]
+      operationId: markAllNotificationsRead
+      responses:
+        "204": { description: All marked read. }
+
+  # ---------------------------------------------------------------- tasks (2.2, 2.3, 2.7)
+  /conversations/{conversation_id}/tasks:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    get:
+      tags: [tasks]
+      operationId: listConversationTasks
+      description: |
+        `department` conversation: tasks whose assignee is in that department.
+        Any other kind: tasks whose `source_conversation_id` is this conversation.
+      parameters:
+        - { $ref: "#/components/parameters/ProjectFilter" }
+        - { $ref: "#/components/parameters/AssigneeFilter" }
+        - { $ref: "#/components/parameters/StatusFilter" }
+      responses:
+        "200":
+          description: Tasks.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Task" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [tasks]
+      operationId: createTask
+      description: |
+        Sets `source_conversation_id` to this conversation and runs `can_assign(caller, assignee, conversation)`;
+        failure is 403 `assignee_not_member`. Under the direct-manager exception the source message
+        text is copied into `description_md`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskCreate" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /tasks/{task_id}:
+    parameters: [{ $ref: "#/components/parameters/TaskId" }]
+    get:
+      tags: [tasks]
+      operationId: getTask
+      responses:
+        "200":
+          description: The task (`can_see`).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [tasks]
+      operationId: updateTask
+      description: |
+        Callers who `can_edit_task`: the assignee, the creator, a superior of the assignee, or a current
+        member of the source conversation (department colleagues can see but not edit). Changing
+        `assignee_id` re-runs `can_assign`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /tasks/{task_id}/history:
+    parameters: [{ $ref: "#/components/parameters/TaskId" }]
+    get:
+      tags: [tasks]
+      operationId: getTaskHistory
+      responses:
+        "200":
+          description: Field changes, oldest first.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/TaskHistoryEntry" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /projects:
+    get:
+      tags: [tasks]
+      operationId: listProjects
+      description: Distinct `tasks.project` values among tasks the caller can see.
+      responses:
+        "200":
+          description: Project labels, sorted.
+          content:
+            application/json:
+              schema: { type: array, items: { type: string } }
+
+  # ---------------------------------------------------------------- suggestions (3.2, 3.3)
+  /conversations/{conversation_id}/suggestions:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    get:
+      tags: [suggestions]
+      operationId: listConversationSuggestions
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/SuggestionStatus" }
+      responses:
+        "200":
+          description: Suggestions in this conversation (members only).
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Suggestion" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /me/suggestions:
+    get:
+      tags: [suggestions]
+      operationId: listMySuggestions
+      description: Pending suggestions whose proposed assignee is the caller and who is a member of the source conversation.
+      responses:
+        "200":
+          description: Pending suggestions for the dashboard.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Suggestion" } }
+  /suggestions/{suggestion_id}/accept:
+    parameters: [{ $ref: "#/components/parameters/SuggestionId" }]
+    post:
+      tags: [suggestions]
+      operationId: acceptSuggestion
+      description: |
+        Caller must be a member of the source conversation and becomes the assigner.
+        For `kind: task` creates the task as proposed (`created_by_ai = true`) via `can_assign`;
+        for `kind: status_change` applies the status. 409 `already_decided` if not pending.
+      responses:
+        "200":
+          description: Accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuggestionDecision" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /suggestions/{suggestion_id}/modify:
+    parameters: [{ $ref: "#/components/parameters/SuggestionId" }]
+    post:
+      tags: [suggestions]
+      operationId: modifyAndAcceptSuggestion
+      description: "`kind: task` only. Creates the task from the edited fields; status becomes `modified`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskCreate" }
+      responses:
+        "200":
+          description: Accepted with modifications.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuggestionDecision" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /suggestions/{suggestion_id}/reject:
+    parameters: [{ $ref: "#/components/parameters/SuggestionId" }]
+    post:
+      tags: [suggestions]
+      operationId: rejectSuggestion
+      responses:
+        "200":
+          description: Rejected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuggestionDecision" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ---------------------------------------------------------------- slash commands (1.20)
+  /commands:
+    post:
+      tags: [commands]
+      operationId: runCommand
+      description: "Built-ins: `/task <title> [@assignee]`, `/invite @user…`, `/leave`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CommandRequest" }
+      responses:
+        "200":
+          description: Command result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CommandResult" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  # ---------------------------------------------------------------- admin (1.3, 2.2, 3.4, 3.5)
+  /admin/ai:
+    get:
+      tags: [admin]
+      operationId: getAiConfig
+      responses:
+        "200":
+          description: The AI principal and the scopes it could hold.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiConfig" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      tags: [admin]
+      operationId: updateAiConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiConfigUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiConfig" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /admin/conversations:
+    get:
+      tags: [admin]
+      operationId: adminListConversations
+      description: Every department and channel with its `ai_enabled` switch (DMs excluded).
+      responses:
+        "200":
+          description: Conversations.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Conversation" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /admin/conversations/{conversation_id}/ai:
+    parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+    patch:
+      tags: [admin]
+      operationId: setConversationAi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConversationAiUpdate" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /admin/ai/runs:
+    get:
+      tags: [admin]
+      operationId: listAiRuns
+      parameters:
+        - { name: conversation_id, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: before, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: Runs, newest first.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AiRun" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /admin/ai/tool-calls:
+    get:
+      tags: [admin]
+      operationId: listAiToolCalls
+      parameters:
+        - { name: run_id, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: tool_name, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/ToolCallStatus" } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: before, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: Tool calls, newest first, each with its source messages.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AiToolCall" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /admin/projects/rename:
+    post:
+      tags: [admin]
+      operationId: renameProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProjectRename" }
+      responses:
+        "200":
+          description: Number of tasks relabelled.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectRenameResult" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
 components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: session
+
+  parameters:
+    UserId: { name: user_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    DepartmentId: { name: department_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    ConversationId: { name: conversation_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    MessageId: { name: message_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    FileId: { name: file_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    TaskId: { name: task_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    SuggestionId: { name: suggestion_id, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    ProjectFilter: { name: project, in: query, schema: { type: string } }
+    AssigneeFilter: { name: assignee, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+    StatusFilter:
+      name: status
+      in: query
+      style: form
+      explode: true
+      schema: { type: array, items: { $ref: "#/components/schemas/TaskStatus" } }
+
+  responses:
+    Unauthorized:
+      description: "Not logged in or session expired (`code: unauthenticated`)."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Forbidden:
+      description: "`forbidden`, `admin_required`, `assignee_not_member`, `not_a_member`."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    NotFound:
+      description: "`not_found`."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Conflict:
+      description: "`conflict`, `already_decided`, `cannot_leave`, `manager_cycle`, `email_taken`."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    ValidationError:
+      description: "`validation_error`; `details` maps field paths to messages."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
   schemas:
+    Uuid: { type: string, format: uuid }
+    Timestamp: { type: string, format: date-time }
+
+    Health:
+      type: object
+      properties:
+        status: { type: string, const: ok }
+      required: [status]
+
     Error:
       type: object
       properties:
-        code: { type: string }
+        code: { type: string, description: Stable machine-readable code. }
         message: { type: string }
+        details:
+          type: object
+          additionalProperties: true
       required: [code, message]
+
+    # ---- users
+    Role: { type: string, enum: [admin, member] }
+    LoginRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1 }
+      required: [email, password]
+    UserSummary:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string }
+        job_title: { type: [string, "null"] }
+        department_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        avatar_file_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        active: { type: boolean }
+      required: [id, name, job_title, department_id, avatar_file_id, active]
+    User:
+      allOf:
+        - $ref: "#/components/schemas/UserSummary"
+        - type: object
+          properties:
+            email: { type: string, format: email }
+            role: { $ref: "#/components/schemas/Role" }
+            department_name: { type: [string, "null"] }
+            manager_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+            manager_name: { type: [string, "null"] }
+            timezone: { type: string }
+            created_at: { $ref: "#/components/schemas/Timestamp" }
+          required: [email, role, department_name, manager_id, manager_name, timezone, created_at]
+    UserProfile:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            direct_reports: { type: array, items: { $ref: "#/components/schemas/UserSummary" } }
+          required: [direct_reports]
+    UserCreate:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        name: { type: string, minLength: 1 }
+        job_title: { type: [string, "null"] }
+        department_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        manager_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        role: { $ref: "#/components/schemas/Role" }
+        timezone: { type: string }
+      required: [email, password, name]
+    UserUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        job_title: { type: [string, "null"] }
+        avatar_file_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        timezone: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role: { $ref: "#/components/schemas/Role" }
+        department_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        manager_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        active: { type: boolean }
+
+    # ---- departments
+    Department:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string }
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        member_count: { type: integer }
+      required: [id, name, conversation_id, member_count]
+    DepartmentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Department"
+        - type: object
+          properties:
+            members: { type: array, items: { $ref: "#/components/schemas/UserSummary" } }
+          required: [members]
+    DepartmentWrite:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+      required: [name]
+
+    # ---- conversations
+    ConversationKind: { type: string, enum: [department, channel, dm] }
+    MemberRole: { type: string, enum: [owner, member] }
+    Membership:
+      type: object
+      description: The caller's own membership, when they have one.
+      properties:
+        role: { $ref: "#/components/schemas/MemberRole" }
+        muted: { type: boolean }
+        ai_opt_in: { type: boolean }
+        joined_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [role, muted, ai_opt_in, joined_at]
+    Conversation:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        kind: { $ref: "#/components/schemas/ConversationKind" }
+        name: { type: [string, "null"], description: Null for DMs; use `dm_peer`. }
+        description: { type: [string, "null"] }
+        is_public: { type: boolean }
+        department_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        ai_enabled: { type: boolean }
+        ai_active:
+          type: boolean
+          description: Whether the AI currently reads this conversation (`ai_can_read`); for DMs, both members opted in.
+        archived_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        member_count: { type: integer }
+        last_seq: { type: integer, format: int64 }
+        last_message_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        unread_count: { type: integer }
+        mention_count: { type: integer, description: Unread messages that mention the caller. }
+        membership: { oneOf: [{ $ref: "#/components/schemas/Membership" }, { type: "null" }] }
+        dm_peer: { oneOf: [{ $ref: "#/components/schemas/UserSummary" }, { type: "null" }] }
+      required:
+        - id
+        - kind
+        - name
+        - description
+        - is_public
+        - department_id
+        - ai_enabled
+        - ai_active
+        - archived_at
+        - created_at
+        - member_count
+        - last_seq
+        - last_message_at
+        - unread_count
+        - mention_count
+        - membership
+        - dm_peer
+    ConversationCreate:
+      type: object
+      properties:
+        kind: { type: string, enum: [channel, dm] }
+        name: { type: string, minLength: 1, description: Required for channels. }
+        description: { type: string }
+        is_public: { type: boolean, default: true }
+        member_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+      required: [kind]
+    ConversationUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: [string, "null"] }
+        is_public: { type: boolean }
+    Member:
+      type: object
+      properties:
+        user: { $ref: "#/components/schemas/UserSummary" }
+        role: { $ref: "#/components/schemas/MemberRole" }
+        joined_at: { $ref: "#/components/schemas/Timestamp" }
+        left_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        muted: { type: boolean }
+        ai_opt_in: { type: boolean }
+      required: [user, role, joined_at, left_at, muted, ai_opt_in]
+    AddMembersRequest:
+      type: object
+      properties:
+        user_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, minItems: 1 }
+      required: [user_ids]
+    MembershipUpdate:
+      type: object
+      properties:
+        muted: { type: boolean }
+        ai_opt_in: { type: boolean }
+
+    # ---- messages
+    ReactionSummary:
+      type: object
+      properties:
+        emoji: { type: string }
+        count: { type: integer }
+        user_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+      required: [emoji, count, user_ids]
+    Mention:
+      type: object
+      properties:
+        kind: { type: string, enum: [user, department, channel, here] }
+        user_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        department_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+      required: [kind, user_id, department_id]
+    Message:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        author_id: { $ref: "#/components/schemas/Uuid" }
+        parent_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        seq: { type: integer, format: int64 }
+        body_md: { type: string, description: GitHub-flavoured Markdown. Empty when deleted. }
+        client_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        also_in_channel: { type: boolean, description: A thread reply that was also sent to the channel. }
+        reply_count: { type: integer }
+        last_reply_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        reply_user_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, description: Up to 5 recent thread participants. }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        edited_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        deleted_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        mentions: { type: array, items: { $ref: "#/components/schemas/Mention" } }
+        reactions: { type: array, items: { $ref: "#/components/schemas/ReactionSummary" } }
+        files: { type: array, items: { $ref: "#/components/schemas/FileMeta" } }
+      required:
+        - id
+        - conversation_id
+        - author_id
+        - parent_id
+        - seq
+        - body_md
+        - client_id
+        - also_in_channel
+        - reply_count
+        - last_reply_at
+        - reply_user_ids
+        - created_at
+        - edited_at
+        - deleted_at
+        - mentions
+        - reactions
+        - files
+    MessageCreate:
+      type: object
+      properties:
+        client_id: { $ref: "#/components/schemas/Uuid" }
+        body_md: { type: string, minLength: 1, maxLength: 40000 }
+        parent_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        also_in_channel: { type: boolean, default: false }
+        file_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, maxItems: 10 }
+      required: [client_id, body_md]
+    MessageUpdate:
+      type: object
+      properties:
+        body_md: { type: string, minLength: 1, maxLength: 40000 }
+      required: [body_md]
+    MessagePage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Message" } }
+        has_more: { type: boolean, description: More messages exist beyond this page in the requested direction. }
+      required: [items, has_more]
+    Thread:
+      type: object
+      properties:
+        parent: { $ref: "#/components/schemas/Message" }
+        replies: { type: array, items: { $ref: "#/components/schemas/Message" } }
+      required: [parent, replies]
+
+    # ---- files
+    SnippetPreview:
+      type: object
+      properties:
+        text: { type: string }
+        truncated: { type: boolean }
+        language: { type: [string, "null"] }
+      required: [text, truncated, language]
+    FileKind: { type: string, enum: [file, image, snippet, avatar] }
+    FileMeta:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        uploader_id: { $ref: "#/components/schemas/Uuid" }
+        conversation_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        message_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        kind: { $ref: "#/components/schemas/FileKind" }
+        name: { type: string }
+        mime: { type: string }
+        size: { type: integer, format: int64 }
+        language: { type: [string, "null"] }
+        has_thumbnail: { type: boolean }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [id, uploader_id, conversation_id, message_id, kind, name, mime, size, language, has_thumbnail, created_at]
+
+    # ---- embeds
+    ConversationRef:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        kind: { $ref: "#/components/schemas/ConversationKind" }
+        name: { type: [string, "null"] }
+      required: [id, kind, name]
+    Embed:
+      oneOf:
+        - $ref: "#/components/schemas/MessageEmbed"
+        - $ref: "#/components/schemas/ChannelEmbed"
+        - $ref: "#/components/schemas/TaskEmbed"
+        - $ref: "#/components/schemas/ForbiddenEmbed"
+        - $ref: "#/components/schemas/NotFoundEmbed"
+      discriminator:
+        propertyName: type
+        mapping:
+          message: "#/components/schemas/MessageEmbed"
+          channel: "#/components/schemas/ChannelEmbed"
+          task: "#/components/schemas/TaskEmbed"
+          forbidden: "#/components/schemas/ForbiddenEmbed"
+          not_found: "#/components/schemas/NotFoundEmbed"
+    MessageEmbed:
+      type: object
+      properties:
+        type: { type: string, const: message }
+        message: { $ref: "#/components/schemas/Message" }
+        author: { $ref: "#/components/schemas/UserSummary" }
+        conversation: { $ref: "#/components/schemas/ConversationRef" }
+      required: [type, message, author, conversation]
+    ChannelEmbed:
+      type: object
+      properties:
+        type: { type: string, const: channel }
+        conversation: { $ref: "#/components/schemas/Conversation" }
+      required: [type, conversation]
+    TaskEmbed:
+      type: object
+      properties:
+        type: { type: string, const: task }
+        task: { $ref: "#/components/schemas/Task" }
+      required: [type, task]
+    ForbiddenEmbed:
+      type: object
+      description: The viewer may not see the target. Render the neutral "private content" stub.
+      properties:
+        type: { type: string, const: forbidden }
+      required: [type]
+    NotFoundEmbed:
+      type: object
+      properties:
+        type: { type: string, const: not_found }
+      required: [type]
+
+    # ---- search
+    SearchHit:
+      type: object
+      properties:
+        message: { $ref: "#/components/schemas/Message" }
+        conversation: { $ref: "#/components/schemas/ConversationRef" }
+        headline: { type: string, description: "Snippet with matches wrapped in `**`." }
+        rank: { type: number }
+      required: [message, conversation, headline, rank]
+
+    # ---- read cursors & notifications
+    MarkReadRequest:
+      type: object
+      properties:
+        last_read_seq: { type: integer, format: int64, minimum: 0 }
+      required: [last_read_seq]
+    ReadCursor:
+      type: object
+      properties:
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        last_read_seq: { type: integer, format: int64 }
+        updated_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [conversation_id, last_read_seq, updated_at]
+    Notification:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        type: { type: string, enum: [mention, dm, thread_reply, task_assigned, suggestion] }
+        ref_type: { type: string, enum: [message, task, suggestion] }
+        ref_id: { $ref: "#/components/schemas/Uuid" }
+        conversation_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        actor_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        preview: { type: string, description: Short text for the bell and the browser notification. }
+        read_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [id, type, ref_type, ref_id, conversation_id, actor_id, preview, read_at, created_at]
+
+    # ---- tasks
+    TaskStatus: { type: string, enum: [open, in_progress, done, cancelled] }
+    TaskPriority: { type: string, enum: [low, normal, high, urgent] }
+    Task:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        title: { type: string }
+        description_md: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        project: { type: [string, "null"] }
+        due_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        assignee: { $ref: "#/components/schemas/UserSummary" }
+        created_by: { $ref: "#/components/schemas/Uuid" }
+        created_by_ai: { type: boolean }
+        source_conversation: { $ref: "#/components/schemas/ConversationRef" }
+        source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        updated_at: { $ref: "#/components/schemas/Timestamp" }
+        completed_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+      required:
+        - id
+        - title
+        - description_md
+        - status
+        - priority
+        - project
+        - due_at
+        - assignee
+        - created_by
+        - created_by_ai
+        - source_conversation
+        - source_message_ids
+        - created_at
+        - updated_at
+        - completed_at
+    TaskCreate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 300 }
+        description_md: { type: string, default: "" }
+        assignee_id: { $ref: "#/components/schemas/Uuid" }
+        project: { type: [string, "null"] }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        due_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+      required: [title, assignee_id]
+    TaskUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 300 }
+        description_md: { type: string }
+        assignee_id: { $ref: "#/components/schemas/Uuid" }
+        project: { type: [string, "null"] }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        due_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+    TaskHistoryEntry:
+      type: object
+      properties:
+        actor_id: { $ref: "#/components/schemas/Uuid" }
+        field: { type: string }
+        old_value: { type: [string, "null"] }
+        new_value: { type: [string, "null"] }
+        changed_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [actor_id, field, old_value, new_value, changed_at]
+
+    # ---- suggestions
+    SuggestionStatus: { type: string, enum: [pending, accepted, modified, rejected, expired] }
+    TaskProposal:
+      type: object
+      description: Payload of a `kind = task` suggestion (output of the `propose_task` tool after resolution).
+      properties:
+        title: { type: string }
+        description_md: { type: string }
+        assignee_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }], description: Null = unresolved; the accepter picks. }
+        assignee_is_member: { type: boolean, description: Whether the assignee is a current member of the source conversation (2.7 card state). }
+        project: { type: [string, "null"] }
+        due_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, minItems: 1 }
+      required: [title, description_md, assignee_id, assignee_is_member, project, due_at, source_message_ids]
+    StatusChangeProposal:
+      type: object
+      description: Payload of a `kind = status_change` suggestion.
+      properties:
+        task_id: { $ref: "#/components/schemas/Uuid" }
+        new_status: { $ref: "#/components/schemas/TaskStatus" }
+        source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, minItems: 1 }
+      required: [task_id, new_status, source_message_ids]
+    Suggestion:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        kind: { type: string, enum: [task, status_change] }
+        payload:
+          oneOf:
+            - $ref: "#/components/schemas/TaskProposal"
+            - $ref: "#/components/schemas/StatusChangeProposal"
+        confidence: { type: [number, "null"] }
+        status: { $ref: "#/components/schemas/SuggestionStatus" }
+        applied_task_id: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        decided_by: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        decided_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        expires_at: { $ref: "#/components/schemas/Timestamp" }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        can_accept:
+          type: boolean
+          description: Whether the caller passes `can_assign` with the proposed assignee right now.
+      required: [id, conversation_id, kind, payload, confidence, status, applied_task_id, decided_by, decided_at, expires_at, created_at, can_accept]
+    SuggestionDecision:
+      type: object
+      properties:
+        suggestion: { $ref: "#/components/schemas/Suggestion" }
+        task: { oneOf: [{ $ref: "#/components/schemas/Task" }, { type: "null" }] }
+      required: [suggestion, task]
+
+    # ---- commands
+    CommandRequest:
+      type: object
+      properties:
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        text: { type: string, pattern: "^/" }
+      required: [conversation_id, text]
+    CommandResult:
+      type: object
+      properties:
+        command: { type: string, enum: [task, invite, leave] }
+        message: { type: string, description: Ephemeral feedback shown only to the caller. }
+        task: { oneOf: [{ $ref: "#/components/schemas/Task" }, { type: "null" }] }
+      required: [command, message, task]
+
+    # ---- admin / AI
+    Scope:
+      type: string
+      enum:
+        - conversations:read
+        - suggestions:create
+        - suggestions:status
+        - leave:request
+        - claims:submit
+        - calendar:create
+    AiConfig:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string }
+        active: { type: boolean }
+        scopes: { type: array, items: { $ref: "#/components/schemas/Scope" } }
+        available_scopes: { type: array, items: { $ref: "#/components/schemas/Scope" } }
+      required: [id, name, active, scopes, available_scopes]
+    AiRun:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        conversation: { $ref: "#/components/schemas/ConversationRef" }
+        from_event_id: { type: integer, format: int64 }
+        to_event_id: { type: integer, format: int64 }
+        started_at: { $ref: "#/components/schemas/Timestamp" }
+        finished_at: { oneOf: [{ $ref: "#/components/schemas/Timestamp" }, { type: "null" }] }
+        status: { type: string, enum: [running, succeeded, failed] }
+        error: { type: [string, "null"] }
+        tool_call_count: { type: integer }
+      required: [id, conversation, from_event_id, to_event_id, started_at, finished_at, status, error, tool_call_count]
+    ToolCallStatus: { type: string, enum: [executed, denied, failed, stubbed] }
+    AiToolCall:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        run_id: { $ref: "#/components/schemas/Uuid" }
+        tool_name: { type: string }
+        arguments: { type: object, additionalProperties: true }
+        scope_check: { type: boolean }
+        result: { oneOf: [{ type: object, additionalProperties: true }, { type: "null" }] }
+        status: { $ref: "#/components/schemas/ToolCallStatus" }
+        source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+      required: [id, run_id, tool_name, arguments, scope_check, result, status, source_message_ids, created_at]
+    AiConfigUpdate:
+      type: object
+      properties:
+        scopes: { type: array, items: { $ref: "#/components/schemas/Scope" } }
+        active: { type: boolean }
+    ConversationAiUpdate:
+      type: object
+      properties:
+        ai_enabled: { type: boolean }
+      required: [ai_enabled]
+    ProjectRename:
+      type: object
+      properties:
+        from: { type: string, minLength: 1 }
+        to: { type: string, minLength: 1 }
+      required: [from, to]
+    ProjectRenameResult:
+      type: object
+      properties:
+        updated: { type: integer }
+      required: [updated]
