@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Computed, DateTime, ForeignKey, Index, Integer, Text, UniqueConstraint, text
+from sqlalchemy import BigInteger, Boolean, Computed, DateTime, ForeignKey, Index, Integer, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -28,6 +28,8 @@ class Message(Base):
     seq: Mapped[int] = mapped_column(BigInteger)
     body_md: Mapped[str] = mapped_column(Text)
     client_id: Mapped[uuid.UUID | None]
+    # A thread reply that was also posted to the channel ("also send to channel", spec 1.8).
+    also_in_channel: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     reply_count: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     last_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = now_column()
