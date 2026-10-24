@@ -23,7 +23,7 @@
 | Live Demo         |       https://one-third-wheel.replit.app          |
 | RunPod Endpoint   |  https://api.runpod.ai/v2/ezymgds6tvhvu9/    |
 | Slide Deck        | [`submission/SDC2026_ONEThirdWheel_SlideDeck.pdf`](submission/SDC2026_ONEThirdWheel_SlideDeck.pdf) |
-| Demo Video        |              |
+| Demo Video        |       https://youtu.be/AgoPzmpXB44       |
 
 ---
 
@@ -121,7 +121,7 @@ TeamSync runs as a single deployment with four layers (system block diagram: App
 
 ### Option 1 — Run on Replit
 
-1. Open the [Replit Project](), or import this repository via **Create Repl → Import from GitHub**.
+1. Import this repository into Replit via **Create Repl → Import from GitHub**, or use the deployed app at the [Live Demo](https://one-third-wheel.replit.app) link above.
 2. Open the **Secrets** tab (🔒) and add the variables listed in `.env.example`:
    - `RUNPOD_API_KEY`
    - `RUNPOD_ENDPOINT_ID`
@@ -156,6 +156,43 @@ Open http://localhost:5173 and log in as `alice.moreau@example.com` / `password1
 
 The AI reads a conversation after it has been quiet for 5 seconds. Post a clear request such as "Bob Tan, please fix the signup button bug by tomorrow 8am" in a channel with TeamSync on, and a suggestion appears for you to accept, modify or reject.
 
+### Test accounts
+
+Use these accounts to log in to the application (on Replit or locally). They are the demo users loaded by the seed data. Every account uses the same password; `grace.liu@example.com` is the admin.
+
+| Email | Name | Role | Password |
+| ----- | ---- | ---- | -------- |
+| ahmed.saleh@example.com | Ahmed Saleh | Financial Analyst | `password123` |
+| alice.moreau@example.com | Alice Moreau | Product Marketing Manager | `password123` |
+| bob.tan@example.com | Bob Tan | Frontend Engineer | `password123` |
+| carol.diaz@example.com | Carol Diaz | Head of Design | `password123` |
+| chloe.martin@example.com | Chloe Martin | QA Engineer | `password123` |
+| dana.kim@example.com | Dana Kim | Staff Engineer | `password123` |
+| elena.sokolova@example.com | Elena Sokolova | Product Designer | `password123` |
+| ethan.novak@example.com | Ethan Novak | Data Engineer | `password123` |
+| farah.aziz@example.com | Farah Aziz | Backend Engineer | `password123` |
+| grace.liu@example.com | Grace Liu | IT Administrator | `password123` |
+| hannah.weber@example.com | Hannah Weber | Head of Marketing | `password123` |
+| ivy.laurent@example.com | Ivy Laurent | Product Designer | `password123` |
+| jonas.berg@example.com | Jonas Berg | Financial Controller | `password123` |
+| ken.ito@example.com | Ken Ito | Marketing Analyst | `password123` |
+| leo.martins@example.com | Leo Martins | Full-stack Engineer | `password123` |
+| lucia.rossi@example.com | Lucia Rossi | Content Lead | `password123` |
+| maya.chen@example.com | Maya Chen | Chief Executive Officer | `password123` |
+| mei.wong@example.com | Mei Wong | Accountant | `password123` |
+| nina.petrov@example.com | Nina Petrov | Office Manager | `password123` |
+| noah.park@example.com | Noah Park | UX Researcher | `password123` |
+| omar.haddad@example.com | Omar Haddad | VP of Engineering | `password123` |
+| priya.nair@example.com | Priya Nair | Backend Engineer | `password123` |
+| rafael.gomez@example.com | Rafael Gomez | Chief Operating Officer | `password123` |
+| ravi.patel@example.com | Ravi Patel | Growth Marketer | `password123` |
+| sam.okafor@example.com | Sam Okafor | Site Reliability Engineer | `password123` |
+| sofia.lindqvist@example.com | Sofia Lindqvist | Chief Financial Officer | `password123` |
+| tom.becker@example.com | Tom Becker | Events Manager | `password123` |
+| victor.hale@example.com | Victor Hale | Systems Administrator | `password123` |
+| yusuf.demir@example.com | Yusuf Demir | Mobile Engineer | `password123` |
+| zara.ali@example.com | Zara Ali | Visual Designer | `password123` |
+
 ### Run Tests
 
 ```bash
@@ -186,7 +223,10 @@ Some tests need the PostgreSQL container from Option 2 to be running; they are s
 Example request:
 
 ```bash
-curl -X POST https://api.runpod.ai/v2/$RUNPOD_ENDPOINT_ID/openai/v1/chat/completions   -H "Authorization: Bearer $RUNPOD_API_KEY"   -H "Content-Type: application/json"   -d '{"model": "'"$AI_MODEL"'", "messages": [{"role": "user", "content": "Hello"}]}'
+curl -X POST https://api.runpod.ai/v2/$RUNPOD_ENDPOINT_ID/openai/v1/chat/completions \
+  -H "Authorization: Bearer $RUNPOD_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "'"$AI_MODEL"'", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
 📄 Proof of use: [`submission/SDC2026_ONEThirdWheel_Runpod_POU.pdf`](submission/SDC2026_ONEThirdWheel_Runpod_POU.pdf)
@@ -217,13 +257,13 @@ The idea is quite big to implement espically with the amount of details that we 
 
 - [x] Team name, domain (Domain 1 / Domain 2) and SDG track filled in
 - [x] Slide deck link added
-- [ ] Demo video link added
+- [x] Demo video link added
 - [x] Replit used, with proof of use in `submission/`
-- [ ] RunPod used, with proof of use in `submission/`
+- [x] RunPod used, with proof of use in `submission/`
 - [x] Preliminary submission completed (`SDC2026_ONEThirdWheel_Preliminary.pdf`)
-- [ ] Technology declaration completed (`SDC2026_TeamName_TechDeclaration.pdf`)
-- [ ] Submission files renamed with your team name (replace `TeamName`)
-- [ ] "How to Run" steps verified
+- [x] Technology declaration completed (`SDC2026_ONEThirdWheel_TechDeclaration.pdf`)
+- [x] Submission files renamed with your team name (replace `TeamName`)
+- [x] "How to Run" steps verified
 - [x] No API keys or secrets committed to the repository
 
 ## License
