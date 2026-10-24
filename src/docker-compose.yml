@@ -26,7 +26,7 @@ services:
     command: sh -c "alembic upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
     # Secrets (RUNPOD_API_KEY, RUNPOD_ENDPOINT_ID, AI_MODEL) come from the gitignored root .env.
     env_file:
-      - path: .env
+      - path: ../.env
         required: false
     environment:
       DATABASE_URL: postgresql+psycopg://chat:chat@postgres:5432/chat
