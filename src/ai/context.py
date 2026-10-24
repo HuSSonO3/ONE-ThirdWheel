@@ -54,7 +54,7 @@ class Context:
 
 def event_messages(events: list[dict], limit: int = 30) -> list[dict]:
     """Fold create/edit/delete snapshots without looking at future event payloads."""
-    messages = {}
+    messages: dict[str, dict] = {}
     for event in events:
         payload = event["payload"]
         ident = payload.get("message_id")

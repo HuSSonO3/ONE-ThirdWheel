@@ -70,6 +70,7 @@ def run_once(db: Session, model: Model, *, debounce_seconds: float = 45, batch_s
     readable = conv is not None and conv.archived_at is None and ai_can_read(db, conv)
     triggers = [e for e in batch if e.type in TRIGGERS and e.actor_id is not None]
     if readable and triggers:
+        assert conv is not None
         latest = db.scalar(select(func.max(Event.created_at)).where(
             Event.conversation_id == conv.id, Event.type.in_(TRIGGERS)))
         if latest and (datetime.now(UTC) - latest).total_seconds() < debounce_seconds:
@@ -79,9 +80,10 @@ def run_once(db: Session, model: Model, *, debounce_seconds: float = 45, batch_s
     if run:
         db.add(run)
         db.flush()
-    records = []
+    records: list[dict] = []
     try:
         if readable and triggers:
+            assert conv is not None and run is not None
             with db.begin_nested():
                 context = assemble(db, conv, batch)
                 def authorize(ctx):

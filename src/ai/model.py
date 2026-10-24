@@ -70,7 +70,7 @@ class RecordedResponses:
         return cls(responses)
 
     def choose(self, context: str, tools: list[dict]) -> list[Call]:
-        calls = []
+        calls: list[Call] = []
         for event in json.loads(context)["new_events"]:
             ident = event["payload"].get("message_id")
             key = f"{ident}:{event['type']}"

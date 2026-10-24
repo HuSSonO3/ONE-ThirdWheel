@@ -40,7 +40,8 @@ uv run python -m ai.worker --source postgres --model recorded --responses saved.
 uv run pytest ai/tests
 uv run python -m ai.eval
 uv run python -m ai.eval --live
-uv run python -m ai.eval --responses ai/tests/data/reference_calls.json
+uv run python -m ai.eval --responses ai/tests/data/reference_calls.json --markdown eval.md
+uvx --with types-jsonschema mypy ai --ignore-missing-imports --check-untyped-defs --follow-imports=silent
 ```
 
 `--source fixtures` swaps the event source for timed shared-fixture replay and
@@ -74,7 +75,10 @@ in this AI-only PR.
 `ai.eval` replays all shared fixture messages, edits, deletions and reactions through
 the same tools, using a recording proposal backend. It prints task-selection
 precision/recall, labelled tool and argument accuracy, per-case outcomes, statuses
-and counts. `--output report.json` saves every run, tool call, and skip reason.
+and counts. `--output report.json` saves every run, tool call, and skip reason;
+`--markdown eval.md` writes the compact metrics/tool/case table intended for the
+plan §7 PR comment (visibility only, no threshold gate). Wiring that comment and a
+`mypy` step into `.github/workflows/` is left to the shared CI owner.
 Labels are used only for scoring; the model never receives `expected.json`.
 
 Default mode is deliberately a **no-action baseline**, not evidence of model

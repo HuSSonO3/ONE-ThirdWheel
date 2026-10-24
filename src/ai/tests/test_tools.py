@@ -32,7 +32,8 @@ def args():
 
 
 def execute(context, call, scopes=DEFAULT_SCOPES):
-    backend, audit = RecordingBackend(), []
+    backend = RecordingBackend()
+    audit: list[dict] = []
     result = dispatch(call, registry(context), ToolContext(uuid.uuid4(), uuid.UUID(CID), scopes, backend), audit.append)
     assert len(audit) == 1
     return result, backend, audit[0]
@@ -84,7 +85,8 @@ def test_non_member_kept_for_human(context, args):
 
 
 def test_dedupe_within_run(context, args):
-    backend, audit = RecordingBackend(), []
+    backend = RecordingBackend()
+    audit: list[dict] = []
     process(context, RecordedModel([Call("propose_task", args)] * 2),
             ToolContext(uuid.uuid4(), uuid.UUID(CID), DEFAULT_SCOPES, backend), audit.append)
     assert len(backend.calls) == 1 and len(audit) == 2

@@ -1,5 +1,6 @@
 import io
 import json
+from email.message import Message
 from urllib.error import HTTPError
 
 import pytest
@@ -32,7 +33,7 @@ def test_transient_retries_but_not_auth_failure(monkeypatch):
 
     def response(request, timeout):
         attempts.append(1)
-        raise HTTPError(request.full_url, 429, "rate limited", {}, None)
+        raise HTTPError(request.full_url, 429, "rate limited", Message(), None)
 
     monkeypatch.setattr(module, "urlopen", response)
     monkeypatch.setattr(module.time, "sleep", lambda _: None)
@@ -41,7 +42,7 @@ def test_transient_retries_but_not_auth_failure(monkeypatch):
     assert len(attempts) == 3
 
     def denied(request, timeout):
-        raise HTTPError(request.full_url, 401, "unauthorized", {}, None)
+        raise HTTPError(request.full_url, 401, "unauthorized", Message(), None)
 
     monkeypatch.setattr(module, "urlopen", denied)
     with pytest.raises(RuntimeError, match="model_http_401"):

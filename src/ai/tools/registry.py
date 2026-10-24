@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from typing import Any
+from typing import Any, Literal
 
 from ai.context import Context
 from ai.tools.base import Scope, ToolContext, ToolResult
@@ -92,14 +92,14 @@ class PrototypeTool:
             if payload["project"] not in self.context.projects or payload["project"].casefold() not in body:
                 payload["project"] = None
             candidates = self.context.tasks + [p["payload"] for p in self.context.proposals if p["kind"] == "task"]
+            title = normalized(payload["title"] or "")
             duplicate = any(
                 set(p.get("source_message_ids", [])) & sources and
-                SequenceMatcher(None, normalized(p.get("title", "")), normalized(payload["title"])).ratio() >= .8
-                or (p.get("assignee_id") == payload["assignee_id"] and
-                    normalized(p.get("title", "")) == normalized(payload["title"]))
+                SequenceMatcher(None, normalized(p.get("title") or ""), title).ratio() >= .8
+                or (p.get("assignee_id") == payload["assignee_id"] and normalized(p.get("title") or "") == title)
                 for p in candidates
             )
-            kind = "task"
+            kind: Literal["task", "status_change"] = "task"
         else:
             task = next((t for t in self.context.tasks if t["task_id"] == args["task_id"]), None)
             if task is None:

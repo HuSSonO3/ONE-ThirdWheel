@@ -12,7 +12,7 @@ from ai.scoring import Scores, arguments_match
 def test_recording_keys_do_not_reuse_created_calls_for_edits():
     ident = str(uuid.uuid4())
     model = RecordedResponses({ident: [{"name": "request_leave", "arguments": {"user_hint": "A"}}]})
-    tools = []
+    tools: list[dict] = []
     created = json.dumps({"new_events": [{"type": "message.created", "payload": {"message_id": ident}}]})
     edited = json.dumps({"new_events": [{"type": "message.updated", "payload": {"message_id": ident}}]})
     assert model.choose(created, tools)[0].name == "request_leave"
@@ -55,7 +55,7 @@ def test_fixture_task_status_is_not_future_final_status():
 
 
 def test_full_fixture_worker_replay_records_every_call_and_timed_source(monkeypatch):
-    sleeps = []
+    sleeps: list[float] = []
     monkeypatch.setattr(evaluation.time, "sleep", sleeps.append)
     report = evaluation.replay(lambda _: RecordedResponses({}), verbose=False, interval=.001)
     assert report["messages"] == 387 and report["failed_inputs"] == 0
@@ -101,3 +101,12 @@ def test_reference_calls_cover_all_tools_and_old_reaction_source():
     for name in ("two_tasks", "clear_ask", "non_member", "closes_task", "reaction_closes_task",
                  "leave_request", "expense_claim", "meeting"):
         assert next(r for r in report["cases"] if r["case"] == name)["arguments_correct"], name
+
+
+def test_markdown_summary_lists_metrics_tools_and_cases():
+    model = RecordedResponses.from_path(Path(__file__).parent / "data" / "reference_calls.json")
+    text = evaluation.markdown(evaluation.replay(lambda _: model, verbose=False), "recorded")
+    assert "| task precision | 1.00 |" in text
+    assert "| schedule_meeting | 1 |" in text
+    assert "| reaction_closes_task | propose_status_change |" in text
+    assert "not model quality" in text

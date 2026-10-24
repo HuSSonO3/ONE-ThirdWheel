@@ -30,8 +30,8 @@ class Scores:
     def __init__(self):
         self.tp = self.fp = self.fn = 0
         self.tool_correct = self.argument_correct = self.labelled = 0
-        self.choices = Counter()
-        self.rows = []
+        self.choices: Counter[str] = Counter()
+        self.rows: list[dict] = []
 
     def observe(self, label: dict | None, calls: list[dict], users: list[dict], *, skipped=False):
         expected_tool = label["expected_tool"] if label else "no_action"

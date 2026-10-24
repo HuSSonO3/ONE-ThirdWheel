@@ -45,8 +45,8 @@ def assemble(db: Session, conversation: Conversation, batch: list[Event]) -> Con
               "timezone": u.timezone, "is_member": is_member(db, u, conversation)}
              for u in db.scalars(select(User).where(User.active))]
     # Only projects visible within this conversation are considered; no cross-channel task leakage.
-    projects = list(db.scalars(select(Task.project).where(
-        Task.source_conversation_id == conversation.id, Task.project.is_not(None)).distinct()))
+    projects = [p for p in db.scalars(select(Task.project).where(
+        Task.source_conversation_id == conversation.id, Task.project.is_not(None)).distinct()) if p]
     return Context(
         {"id": str(conversation.id), "kind": conversation.kind, "description": conversation.description or ""},
         [event_dict(e) for e in batch if str(e.subject_id) not in deleted],

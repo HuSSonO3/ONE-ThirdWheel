@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 
 from ai.context import Context, batch_messages
-from ai.model import NativeModel, RecordedResponses
+from ai.model import Model, NativeModel, RecordedResponses
 from ai.scoring import Scores
 from ai.storage import RecordingBackend
 from ai.tools.base import DEFAULT_SCOPES, ToolContext
@@ -78,7 +78,9 @@ def replay(model_factory, *, verbose: bool = True, interval: float = 0, stop_on_
     convs = {c["id"]: c for c in load("conversations")}
     departments, users, tasks, suggestions = (load(n) for n in ("departments", "users", "tasks", "suggestions"))
     labels = {c["message_id"]: c for c in load("expected")["cases"]}
-    backend, audits, histories = RecordingBackend(), [], {}
+    backend = RecordingBackend()
+    audits: list[dict] = []
+    histories: dict[str, list[dict]] = {}
     scores = Scores()
     skipped = failures = last_event_id = 0
     runs, skipped_events = [], []
@@ -152,13 +154,35 @@ def replay(model_factory, *, verbose: bool = True, interval: float = 0, stop_on_
     return report
 
 
+def markdown(report: dict, mode: str) -> str:
+    """Compact PR-comment summary; visibility only, never a pass/fail gate."""
+    lines = [f"### AI eval ({mode})", "",
+             "| Metric | Value |", "| --- | --- |"]
+    for key in ("task_precision", "task_recall", "labelled_tool_accuracy", "labelled_argument_accuracy"):
+        lines.append(f"| {key.replace('_', ' ')} | {report[key]:.2f} |")
+    for key in ("messages", "skipped", "failed_inputs", "recorded_proposals"):
+        lines.append(f"| {key.replace('_', ' ')} | {report[key]} |")
+    lines += ["", "| Tool | Calls |", "| --- | --- |"]
+    lines += [f"| {name} | {count} |" for name, count in sorted(report["tool_choices"].items())]
+    lines += ["", "| Case | Expected | Actual | Arguments |", "| --- | --- | --- | --- |"]
+    for row in report["cases"]:
+        actual = ", ".join(row["actual"]) or "skipped"
+        correct = "yes" if row["arguments_correct"] else "no"
+        lines.append(f"| {row['case']} | {row['expected']} | {actual} | {correct} |")
+    if mode != "live":
+        lines += ["", "_Recorded replay: measures the pipeline, not model quality._"]
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--live", action="store_true")
     group.add_argument("--responses", type=Path)
     parser.add_argument("--output", type=Path, help="Write full run/tool/case results as JSON.")
+    parser.add_argument("--markdown", type=Path, help="Write a PR-comment summary as Markdown.")
     args = parser.parse_args()
+    model: Model
     if args.live:
         model = NativeModel()
         print("LIVE model evaluation; sends AI-readable fixture conversations to the configured provider.")
@@ -169,6 +193,9 @@ def main() -> None:
         report = replay(lambda _: model)
     if args.output:
         args.output.write_text(json.dumps(report, indent=2) + "\n")
+    if args.markdown:
+        mode = "live" if args.live else "recorded" if args.responses else "no-action baseline"
+        args.markdown.write_text(markdown(report, mode))
 
 
 if __name__ == "__main__":

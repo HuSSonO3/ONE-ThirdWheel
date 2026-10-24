@@ -1,6 +1,6 @@
 """Validate, authorize, execute and audit every native tool call, including failures."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -8,7 +8,7 @@ from ai.model import Call
 from ai.tools.base import Tool, ToolContext, ToolResult
 
 
-def dispatch(call: Call, tools: dict[str, Tool], ctx: ToolContext, audit: Callable[[dict], None]) -> ToolResult:
+def dispatch(call: Call, tools: Mapping[str, Tool], ctx: ToolContext, audit: Callable[[dict], None]) -> ToolResult:
     tool = tools.get(call.name)
     scope_check = bool(tool and (tool.required_scope is None or tool.required_scope in ctx.scopes))
     if tool is None:
