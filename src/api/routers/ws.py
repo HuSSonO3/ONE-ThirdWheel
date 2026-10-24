@@ -11,7 +11,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
 from starlette.concurrency import run_in_threadpool
 
-from api import auth, realtime
+from api import auth, config, realtime
 from api import db as db_module
 from api.access import is_member
 from api.models import Conversation
@@ -46,6 +46,12 @@ def _typing_targets(user_id: uuid.UUID, conversation_id: uuid.UUID) -> set[uuid.
 @router.websocket("/ws")
 async def websocket(ws: WebSocket) -> None:
     await ws.accept()
+    # Browsers always send Origin on a WebSocket handshake; only our own pages may ride the session cookie.
+    # Clients without one (CLI tools, tests) can't carry a victim's cookie, so they go on to the cookie check.
+    origin = ws.headers.get("origin")
+    if origin is not None and origin not in config.ALLOWED_ORIGINS:
+        await ws.close(code=4403)
+        return
     found = await run_in_threadpool(_handshake, ws.cookies.get(auth.COOKIE))
     if not found:
         await ws.close(code=4401)

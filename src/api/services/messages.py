@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from api import events
-from api.access import can_access
+from api.access import can_access, message_visible_clause
 from api.errors import conflict, forbidden, invalid
 from api.models import Conversation, File, Message, MessageEdit, MessageMention, MessageRef, Reaction, User
 from api.schemas import contract as c
@@ -41,8 +41,10 @@ def page(db: Session, conv: Conversation, before_seq: int | None, after_seq: int
 
 def thread(db: Session, user: User, message_id: uuid.UUID) -> tuple[Message, list[Message]]:
     m = readable_message(db, user, message_id)
-    parent = db.get(Message, m.parent_id) if m.parent_id else m
-    replies = list(db.scalars(select(Message).where(Message.parent_id == parent.id).order_by(Message.seq)))
+    parent = db.get(Message, m.parent_id) if m.parent_id else m  # older than any reply, so also readable
+    # Point-in-time per reply: someone who left sees the thread only up to when they left (2.7).
+    replies = list(db.scalars(select(Message).where(Message.parent_id == parent.id, message_visible_clause(user))
+                              .order_by(Message.seq)))
     return parent, replies
 
 
@@ -128,6 +130,7 @@ def edit(db: Session, user: User, m: Message, body: c.MessageUpdate) -> Message:
     if m.deleted_at is not None:
         raise conflict("conflict", "That message was deleted.")
     conv = db.get(Conversation, m.conversation_id)
+    require_member(db, user, conv)  # someone who left can't rewrite history they no longer see
     require_writable(conv)
     if body.body_md == m.body_md:
         return m
@@ -148,6 +151,8 @@ def edit(db: Session, user: User, m: Message, body: c.MessageUpdate) -> Message:
 def remove(db: Session, user: User, m: Message) -> None:
     if m.author_id != user.id and user.role != "admin":
         raise forbidden("Only the author or an admin can delete a message.")
+    if user.role != "admin":
+        require_member(db, user, db.get(Conversation, m.conversation_id))
     if m.deleted_at is not None:
         return
     m.deleted_at = now()
@@ -158,6 +163,7 @@ def remove(db: Session, user: User, m: Message) -> None:
 
 
 def react(db: Session, user: User, m: Message, emoji: str, add: bool) -> None:
+    require_member(db, user, db.get(Conversation, m.conversation_id))  # reading a public channel isn't joining it
     if m.deleted_at is not None:
         raise conflict("conflict", "That message was deleted.")
     if not emoji or len(emoji) > 32:

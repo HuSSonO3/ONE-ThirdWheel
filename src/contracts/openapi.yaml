@@ -760,7 +760,10 @@ paths:
     patch:
       tags: [tasks]
       operationId: updateTask
-      description: Any caller who `can_see` the task. Changing `assignee_id` re-runs `can_assign`.
+      description: |
+        Callers who `can_edit_task`: the assignee, the creator, a superior of the assignee, or a current
+        member of the source conversation (department colleagues can see but not edit). Changing
+        `assignee_id` re-runs `can_assign`.
       requestBody:
         required: true
         content:

@@ -171,3 +171,28 @@ def test_images_get_thumbnails_and_snippets_previews(api_as) -> None:
     assert ivy.post("/files", files={"file": ("x.txt", b"x", "text/plain")}).status_code == 422
     assert api_as("bob").post("/files", data={"conversation_id": str(ids.conv("hiring"))},
                               files={"file": ("x.txt", b"x", "text/plain")}).status_code == 403
+
+
+def test_editing_deleting_and_reacting_need_membership(api_as) -> None:
+    sofia = api_as("sofia")  # can read public #website, isn't a member
+    assert sofia.put(f"/messages/{ids.message('p1')}/reactions/👍").status_code == 403
+    ken = api_as("ken")  # left #website on the 20th; p20 is his own message from the 14th
+    assert ken.patch(f"/messages/{ids.message('p20')}", json={"body_md": "rewritten"}).status_code == 403
+    assert ken.delete(f"/messages/{ids.message('p20')}").status_code == 403
+
+
+def test_replay_never_leaks_deleted_text_or_edit_history(api_as, session) -> None:
+    from sqlalchemy import select
+
+    from api import realtime
+    from api.models import Event, User
+
+    alice = api_as("alice")
+    m = post(alice, "website", "secret launch date").json()
+    alice.patch(f"/messages/{m['id']}", json={"body_md": "launch date TBD"})
+    alice.delete(f"/messages/{m['id']}")
+    bob = session.get(User, ids.user("bob"))
+    events = session.scalars(select(Event).where(Event.subject_id == m["id"]).order_by(Event.id)).all()
+    frames = [realtime.frame_for(session, e, bob) for e in events]
+    assert [f["type"] for f in frames] == ["message.created", "message.updated", "message.deleted"]
+    assert all(f["data"].get("body_md", "") == "" and "prior_body_md" not in f["data"] for f in frames)

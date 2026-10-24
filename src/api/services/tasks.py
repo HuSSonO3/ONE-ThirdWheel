@@ -8,7 +8,7 @@ from sqlalchemy import case, distinct, select, update
 from sqlalchemy.orm import Session
 
 from api import events
-from api.access import can_assign, can_see, is_member, is_superior, task_visible_clause
+from api.access import can_assign, can_edit_task, can_see, is_member, is_superior, task_visible_clause
 from api.errors import forbidden, invalid
 from api.models import Conversation, Message, Task, TaskHistory, TaskSource, User
 from api.schemas import contract as c
@@ -112,8 +112,8 @@ def _text(value: Any) -> str | None:
 
 
 def update_task(db: Session, actor: User, task: Task, body: c.TaskUpdate) -> Task:
-    if not can_see(db, actor, task):
-        raise forbidden()
+    if not can_edit_task(db, actor, task):
+        raise forbidden("You can see this task but not change it.")
     changes: dict[str, list[Any]] = {}
     for field in sorted(body.model_fields_set):
         value = getattr(body, field)

@@ -151,3 +151,29 @@ def test_ai_reads_a_dm_only_with_both_opt_ins(session: Session) -> None:
     assert ai_can_read(session, conv(session, "dm:dana:omar"))
     assert not ai_can_read(session, conv(session, "dm:alice:bob"))  # one-sided
     assert not ai_can_read(session, conv(session, "dm:ivy:carol"))  # neither
+
+
+def test_former_member_sees_a_thread_only_up_to_when_they_left(session: Session) -> None:
+    """Replies posted after someone left are hidden from them, even inside an older thread (2.7)."""
+    from api.services.messages import thread
+
+    website = conv(session, "website")
+    website.is_public = False
+    ken, parent = user(session, "ken"), session.get(Message, ids.message("p20"))  # 14 Oct, before Ken left
+    for seq, day in ((900, 16), (901, 22)):
+        session.add(Message(conversation_id=website.id, author_id=ids.user("bob"), parent_id=parent.id, seq=seq,
+                            body_md=f"reply {day}", created_at=datetime(2026, 10, day, tzinfo=UTC)))
+    session.flush()
+    _, replies = thread(session, ken, parent.id)
+    assert [r.body_md for r in replies] == ["reply 16"]
+
+
+def test_department_colleagues_see_but_cannot_edit_a_task(session: Session) -> None:
+    from api.access import can_edit_task
+
+    task = session.get(Task, ids.task("h11"))  # Priya's task, spawned in #website
+    chloe, omar, priya, alice = (user(session, k) for k in ("chloe", "omar", "priya", "alice"))
+    assert can_see(session, chloe, task) and not can_edit_task(session, chloe, task)  # same department only
+    assert can_edit_task(session, priya, task)  # assignee
+    assert can_edit_task(session, omar, task)  # creator and superior
+    assert can_edit_task(session, alice, task)  # member of #website

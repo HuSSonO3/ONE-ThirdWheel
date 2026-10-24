@@ -177,6 +177,16 @@ def _extra(db: Session, event: Event, viewer: User) -> dict[str, Any]:
     return {}
 
 
+def _client_payload(db: Session, event: Event) -> dict[str, Any]:
+    """The events row minus what clients must not get: edit history (AI-only) and text of deleted messages."""
+    payload = {k: v for k, v in event.payload.items() if k != "prior_body_md"}
+    if event.type in ("message.created", "message.updated"):
+        m = db.get(Message, event.subject_id)
+        if m is None or m.deleted_at is not None:
+            payload.update(body_md="", mentions=[], refs=[])
+    return payload
+
+
 def frame_for(db: Session, event: Event, viewer: User, cache: dict[str, Any] | None = None) -> dict[str, Any]:
     if cache is not None and event.type not in PER_RECIPIENT:
         if "extra" not in cache:
@@ -184,7 +194,7 @@ def frame_for(db: Session, event: Event, viewer: User, cache: dict[str, Any] | N
         extra = cache["extra"]
     else:
         extra = _extra(db, event, viewer)
-    return frame(event.type, event.id, event.conversation_id, {**event.payload, **extra})
+    return frame(event.type, event.id, event.conversation_id, {**_client_payload(db, event), **extra})
 
 
 def deliveries(db: Session, event: Event, connected: set[uuid.UUID]) -> list[tuple[uuid.UUID, dict[str, Any]]]:

@@ -10,3 +10,6 @@ SESSION_TTL = timedelta(days=int(os.environ.get("SESSION_TTL_DAYS", "14")))
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
 SUGGESTION_TTL = timedelta(days=int(os.environ.get("SUGGESTION_TTL_DAYS", "7")))
 CONTRACT = SRC / "contracts" / "openapi.yaml"
+# Browser origins allowed to open the WebSocket (cross-site WebSocket hijacking guard).
+ALLOWED_ORIGINS = {o.strip() for o in os.environ.get(
+    "ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()}

@@ -77,6 +77,19 @@ def can_see(db: Session, user: User, task: Task) -> bool:
     return bool(db.scalar(select(exists().where(Task.id == task.id, task_visible_clause(user)))))
 
 
+def can_edit_task(db: Session, user: User, task: Task) -> bool:
+    """True if `user` may change `task`: stricter than `can_see`, which also lets the whole department read.
+
+    The assignee, the creator, a superior of the assignee, or a current member of the conversation the
+    task was spawned in. Department colleagues can see a task in their department channel but not edit it.
+    """
+    if not user.active:
+        return False
+    if user.id in (task.assignee_id, task.created_by) or is_superior(db, user, task.assignee_id):
+        return True
+    return is_member(db, user, db.get(Conversation, task.source_conversation_id))
+
+
 def can_assign(db: Session, assigner: User, assignee: User, conversation: Conversation) -> bool:
     """True if `assigner` may give `assignee` a task spawned in `conversation` (spec 2.7).
 
