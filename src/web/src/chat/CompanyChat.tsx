@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Hash, Lock, MessageSquare, MoreHorizontal, Users, X } from 'lucide-react'
+import { Check, ClipboardList, Hash, Lock, MessageSquare, MoreHorizontal, Sparkles, Users, X } from 'lucide-react'
 import './chat.css'
 import type { AppNotification, Conversation, FileAttachment, Message, Suggestion, Task, TaskStatus } from './types'
 import {
@@ -9,9 +9,9 @@ import {
 import Sidebar, { type View } from './Sidebar'
 import TopBar from './TopBar'
 import MessageItem from './MessageItem'
-import SuggestionCard from './SuggestionCard'
 import Composer from './Composer'
 import { AdminView, ConversationTasks, MyTasks } from './TaskViews'
+import TeamSyncPanel from './TeamSyncPanel'
 import { Avatar, Dialog } from './ui'
 
 type Modal = null | 'browse' | 'channel' | 'dm' | { modify: Suggestion } | { remove: string } | { archive: string }
@@ -37,6 +37,10 @@ export default function CompanyChat() {
   const [membersOpen, setMembersOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [jump, setJump] = useState<string | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  // TeamSync switch per conversation. DMs: each person opts in; AI reads only when both have (spec 3.5).
+  const [tsOff, setTsOff] = useState<Record<string, boolean>>({})
+  const [dmOptIn, setDmOptIn] = useState<Record<string, boolean>>({ 'alice:dm-alice-nina': true })
   const scroller = useRef<HTMLDivElement>(null)
 
   const me = userById(meId)!
@@ -51,7 +55,10 @@ export default function CompanyChat() {
     ? tasks.filter(t => userById(t.assigneeId)?.department === conversation.department)
     : tasks.filter(t => t.sourceConversationId === conversation.id), [tasks, conversation])
   const myOpenTasks = tasks.filter(t => t.assigneeId === meId && (t.status === 'open' || t.status === 'in_progress')).length
-  const pending = suggestions.filter(s => s.conversationId === conversation.id)
+  const convSuggestions = suggestions.filter(s => s.conversationId === conversation.id)
+  const tsOn = conversation.kind === 'dm' ? !!dmOptIn[`${meId}:${conversation.id}`] : !tsOff[conversation.id]
+  const pendingCount = convSuggestions.filter(s => s.status === 'pending').length
+  const approvedCount = convSuggestions.filter(s => s.status === 'accepted').length
   const thread = threadId ? messages.find(m => m.id === threadId) : undefined
 
   // Scroll to bottom on conversation / message changes; or to a jumped-to message.
@@ -69,7 +76,14 @@ export default function CompanyChat() {
       }
     }
     el.scrollTop = el.scrollHeight
-  }, [conversation.id, topLevel.length, suggestions, tab, view, jump])
+  }, [conversation.id, topLevel.length, suggestions, tab, view, jump, tsOn])
+
+  function toggleTeamSync() {
+    if (conversation.kind === 'dm') setDmOptIn(o => ({ ...o, [`${meId}:${conversation.id}`]: !tsOn }))
+    else setTsOff(o => ({ ...o, [conversation.id]: tsOn }))
+  }
+  const openThread = (id: string | null) => { setThreadId(id); if (id) setPanelOpen(false) }
+  const togglePanel = () => { setPanelOpen(o => !o); setThreadId(null) }
 
   function selectConversation(id: string) {
     setView('chat'); setActiveId(id); setTab('messages'); setThreadId(null); setNavOpen(false); setMembersOpen(false); setMoreOpen(false)
@@ -179,6 +193,13 @@ export default function CompanyChat() {
                     <p>{conversation.kind === 'dm' ? `${partner?.title} · ${partner?.department}` : conversation.description}</p>
                   </div>
                   <div className="chead__right">
+                    <button className={`ts-toggle${tsOn ? ' is-on' : ''}`} aria-pressed={tsOn} onClick={toggleTeamSync}
+                      title={conversation.kind === 'dm' ? 'Allow TeamSync in this conversation' : 'Turn TeamSync on or off for this conversation'}>
+                      <Sparkles size={16} /><span className="ts-toggle__label">TeamSync {tsOn ? 'on' : 'off'}</span>
+                    </button>
+                    <button className={`icon-btn icon-btn--box icon-btn--lg${panelOpen ? ' is-on' : ''}`} aria-label="TeamSync overview and shared resources" aria-pressed={panelOpen} onClick={togglePanel}>
+                      <ClipboardList size={19} />{tsOn && pendingCount > 0 && <span className="icon-btn__dot" />}
+                    </button>
                     <div className="members-wrap">
                       <button className="members" aria-expanded={membersOpen} onClick={() => { setMembersOpen(o => !o); setMoreOpen(false) }}>
                         <Users size={17} /><span>{members.length}</span>
@@ -203,6 +224,16 @@ export default function CompanyChat() {
                   </div>
                 </div>
 
+                <div className={`ts-banner${tsOn ? '' : ' is-off'}`} role="status">
+                  <Sparkles size={15} />
+                  <span>{tsOn
+                    ? conversation.kind === 'dm'
+                      ? `TeamSync is enabled because you and ${partner?.name.split(' ')[0]} both allowed it. Nothing is shared without approval.`
+                      : 'TeamSync is enabled. New messages may surface task suggestions; nothing is shared without approval.'
+                    : conversation.kind === 'dm' ? 'TeamSync is off. It only reads this DM once you and the other person both allow it.' : 'TeamSync is paused. Messages here are not read.'}</span>
+                  <button className="link-btn" onClick={toggleTeamSync}>{tsOn ? 'Pause' : 'Turn on'}</button>
+                </div>
+
                 <div className="tabs" role="tablist">
                   <button role="tab" aria-selected={tab === 'messages'} className={tab === 'messages' ? 'is-on' : ''} onClick={() => setTab('messages')}>Messages</button>
                   <button role="tab" aria-selected={tab === 'tasks'} className={tab === 'tasks' ? 'is-on' : ''} onClick={() => setTab('tasks')}>Tasks <span className="count count--soft">{convTasks.length}</span></button>
@@ -213,18 +244,21 @@ export default function CompanyChat() {
                 ) : (
                   <>
                     <div className="messages" ref={scroller} role="log" aria-label={`Messages in ${title}`} tabIndex={0}>
-                      {topLevel.length === 0 && pending.length === 0 && (
+                      {topLevel.length === 0 && (
                         <div className="empty"><MessageSquare size={28} /><h3>Start the conversation</h3><p>Messages you send here stay in this browser.</p></div>
                       )}
                       {topLevel.map(m => (
                         <MessageItem key={m.id} message={m} meId={meId} replyCount={replyCount(m.id)}
-                          onReact={react} onReply={setThreadId} onEdit={editMessage} onDelete={id => setModal({ remove: id })} />
+                          onReact={react} onReply={openThread} onEdit={editMessage} onDelete={id => setModal({ remove: id })} />
                       ))}
-                      {isMember && pending.map(s => (
-                        <SuggestionCard key={s.id} suggestion={s} conversation={conversation} me={me}
-                          source={messages.find(m => m.id === s.sourceMessageId)}
-                          onAccept={(x, invite) => createTask(x, {}, invite)} onModify={x => setModal({ modify: x })} onReject={rejectSuggestion} />
-                      ))}
+                      {isMember && tsOn && pendingCount > 0 && (
+                        <button className="ts-note ts-note--pending" onClick={() => { setPanelOpen(true); setThreadId(null) }}>
+                          <Sparkles size={15} /> TeamSync found {pendingCount} possible {pendingCount === 1 ? 'action' : 'actions'} · Review required
+                        </button>
+                      )}
+                      {isMember && tsOn && approvedCount > 0 && (
+                        <div className="ts-note ts-note--done"><Check size={15} /> TeamSync approved {approvedCount} {approvedCount === 1 ? 'task' : 'tasks'} · Added to this conversation</div>
+                      )}
                     </div>
                     {isMember ? (
                       <Composer value={drafts[conversation.id] ?? ''} onChange={v => setDrafts(d => ({ ...d, [conversation.id]: v }))}
@@ -237,6 +271,12 @@ export default function CompanyChat() {
                   </>
                 )}
               </div>
+
+              {panelOpen && tab === 'messages' && (
+                <TeamSyncPanel conversation={conversation} me={me} members={members} messages={messages.filter(m => m.conversationId === conversation.id)}
+                  tasks={convTasks} suggestions={convSuggestions} on={tsOn} onClose={() => setPanelOpen(false)} onViewTasks={() => setTab('tasks')}
+                  onAccept={(x, invite) => createTask(x, {}, invite)} onModify={x => setModal({ modify: x })} onReject={rejectSuggestion} />
+              )}
 
               {thread && tab === 'messages' && (
                 <aside className="thread" aria-label="Thread">
