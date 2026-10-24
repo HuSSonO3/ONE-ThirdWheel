@@ -1,0 +1,103 @@
+{
+  "6afd80d0-83f7-5dd8-bbfe-0341c9d27583": [
+    {
+      "name": "propose_task",
+      "arguments": {
+        "title": "Fix the signup button 500 on the pricing page",
+        "description_md": "Fix the broken signup button before Thursday's launch.",
+        "source_message_ids": ["6afd80d0-83f7-5dd8-bbfe-0341c9d27583"],
+        "suggested_assignee": "Bob Tan",
+        "due_at": "2026-10-22T10:00:00Z",
+        "confidence": 0.95
+      }
+    }
+  ],
+  "6a44d87e-b3e4-5ce5-b882-63a192dcf5d3": [
+    {
+      "name": "propose_task",
+      "arguments": {
+        "title": "Update the analytics snippet on the landing page",
+        "description_md": "The GA4 tag is outdated.",
+        "source_message_ids": ["6a44d87e-b3e4-5ce5-b882-63a192dcf5d3"],
+        "suggested_assignee": "Ethan Novak",
+        "confidence": 0.95
+      }
+    }
+  ],
+  "fbc86fb2-5186-5dfe-965b-f42c627c6b3d": [
+    {
+      "name": "propose_task",
+      "arguments": {
+        "title": "Finalise the newsletter copy",
+        "description_md": "Finalise newsletter copy by Wednesday.",
+        "source_message_ids": ["fbc86fb2-5186-5dfe-965b-f42c627c6b3d"],
+        "suggested_assignee": "Alice Moreau",
+        "due_at": "2026-10-21T10:00:00Z",
+        "confidence": 0.95
+      }
+    },
+    {
+      "name": "propose_task",
+      "arguments": {
+        "title": "Book the venue for the November meetup",
+        "description_md": "Book a venue for the November meetup.",
+        "source_message_ids": ["fbc86fb2-5186-5dfe-965b-f42c627c6b3d"],
+        "suggested_assignee": "Tom Becker",
+        "confidence": 0.9
+      }
+    }
+  ],
+  "55e3902b-e5fa-5fd6-ad7f-e3d6460151f0": [
+    {
+      "name": "propose_status_change",
+      "arguments": {
+        "task_id": "8277b003-0577-59b1-b073-67d077d84e1b",
+        "new_status": "done",
+        "source_message_ids": ["55e3902b-e5fa-5fd6-ad7f-e3d6460151f0"],
+        "confidence": 0.95
+      }
+    }
+  ],
+  "33a05931-b769-59f5-a6a0-023996773290:reaction.added": [
+    {
+      "name": "propose_status_change",
+      "arguments": {
+        "task_id": "60a6039b-5ab1-51c4-ba11-2e0ee669f707",
+        "new_status": "done",
+        "source_message_ids": ["33a05931-b769-59f5-a6a0-023996773290"],
+        "confidence": 0.9
+      }
+    }
+  ],
+  "0ba99736-34be-5b42-b08b-1ff914e4f990": [
+    {
+      "name": "request_leave",
+      "arguments": {
+        "user_hint": "Ken Ito",
+        "start_date": "2026-11-03",
+        "end_date": "2026-11-05"
+      }
+    }
+  ],
+  "b28b1127-9761-5ebe-bc0a-8628cb9debc5": [
+    {
+      "name": "submit_claim",
+      "arguments": {
+        "user_hint": "Tom Becker",
+        "amount": 84.5,
+        "currency": "EUR",
+        "description": "Client lunch on Tuesday"
+      }
+    }
+  ],
+  "950ccf60-ff42-518a-b2ca-478c217576dc": [
+    {
+      "name": "schedule_meeting",
+      "arguments": {
+        "attendee_hints": ["Hannah", "Ivy", "Ken"],
+        "title": "Review the moodboards",
+        "duration_minutes": 30
+      }
+    }
+  ]
+}

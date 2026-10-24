@@ -1,7 +1,8 @@
 # WebSocket contract
 
 One socket per tab at `GET /ws` (upgrade). It authenticates from the same `session` cookie as REST;
-an invalid session closes with code `4401`. All frames are JSON text.
+an invalid session closes with code `4401`. A browser `Origin` outside the server's
+`ALLOWED_ORIGINS` closes with `4403`. All frames are JSON text.
 
 ## Server → client envelope
 
@@ -13,7 +14,10 @@ an invalid session closes with code `4401`. All frames are JSON text.
   read cursors, notifications, control frames).
 - `conversation_id`: null for frames not tied to a conversation.
 - `data`: per type below. For persisted events it is the event's `payload` from `events-row.md`
-  plus the fields listed here, so the client can render without a REST call.
+  plus the fields listed here, so the client can render without a REST call. Two exceptions:
+  `prior_body_md` (edit history, AI-only) is never sent, and for `message.created`/`message.updated`
+  the `body_md`, `mentions` and `refs` are always the message's current state (empty once deleted),
+  so replaying an old event never reveals pre-edit text.
 
 ## Persisted events (replayable)
 
