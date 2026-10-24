@@ -1,28 +1,55 @@
-# Main chat frontend
+# Chat frontend
 
-Run `npm ci` then `npm run dev` from `src/web`. Validate with `npm run lint` and `npm run build`.
+React + TypeScript (Vite). The UI talks to the real API through the generated client in `src/api/` and a single
+WebSocket (`/ws`). Code lives in `src/chat/`.
 
-The visual design follows the supplied screenshot: white surfaces, pale-blue navigation rail, electric-blue actions.
+## Run it
 
-The product source of truth is `.agents/skills/impeccable/feature_spec.md` in the repository root. The current local spec is untracked; it was read, not changed or automatically committed.
+1. Start Postgres and the API from the repo root, then load the fixtures:
 
-## Implemented frontend scope
+   ```bash
+   docker compose up --build postgres api
+   docker compose exec api python scripts/seed.py --reset
+   ```
 
-- §1.5: department / channel / DM sections, conversation selection, descriptions and member counts.
-- §1.7: local send with UUID, blank-message guard, edit own messages with edited marker, delete own messages with confirmation.
-- §1.8: right-side thread panel and local thread replies with reply counts.
-- §1.10: safe Markdown rendering including GFM, inline/fenced code, lists, links and quotes (raw HTML is not enabled).
-- §1.12: toggle local emoji reactions; counts reflect local reactions only.
-- §1.16: sample unread badges, cleared locally when selecting a conversation.
-- Local text search within the selected conversation (not the cross-channel server search in §1.18).
-- Per-conversation and per-thread drafts, Enter to send, Shift+Enter for newline, IME guard, keyboard navigation, mobile sidebar and reduced-motion support.
+2. Start the web app:
 
-## Boundaries
+   ```bash
+   cd src/web && npm ci && npm run dev
+   ```
 
-The backend currently exposes only `/health`; no message/auth/WebSocket contracts exist yet. All identities, messages and counts are sample data held in memory until the API exists. Reload resets local activity. No requests claim real delivery or authorization. The shared fixture files remain untouched and empty; frontend sample data lives in `src/chat/data.ts`.
+3. Open http://localhost:5173 and sign in as a fixture user, e.g. `grace.liu@example.com` (admin) / `password123`.
 
-Tasks/AI, channel creation/join/archive, new-DM lookup, authentication, server permissions, persistence, infinite history/virtualization, real-time delivery, attachments, mention autocomplete, WYSIWYG editing, syntax highlighting and cross-channel search are future integrations. Threads do not yet include “also send to channel.”
+The API uses an HttpOnly session cookie, so the browser must reach it same-origin. `vite.config.ts` proxies the API
+paths and `/ws` to `http://localhost:8000` (override with `API_PROXY_TARGET`; Compose sets it to `http://api:8000`).
 
-## Manual smoke check
+Checks: `npm run lint`, `npm run build` (type-checks). After editing `contracts/openapi.yaml`, run `src/scripts/gen_client.sh`.
 
-Switch between all three conversation kinds; verify headers and unread counts. Type a draft, switch away and back, then send using Enter. Confirm whitespace-only sends are disabled and Shift+Enter inserts a newline. Edit a sent message, cancel deletion once, then confirm deletion. Add and remove a reaction. Open a thread, send a reply, close and reopen it. Search for matching and nonmatching text. At mobile width, open navigation, cycle focus, press Escape, and confirm focus returns to the menu button. Reload to confirm local activity resets.
+## Layout
+
+| File | Role |
+| --- | --- |
+| `App.tsx` | Session gate: `/auth/me`, then `Login` or `ChatApp`. |
+| `chat/ChatApp.tsx` | The signed-in screen: sidebar, header, messages, panels, dialogs. |
+| `chat/useChatData.ts` | All server state and actions (REST calls, optimistic send, WebSocket event handling). |
+| `chat/socket.ts` | WebSocket client: `subscribe` with per-conversation cursors, jittered reconnect. |
+| `chat/adapt.ts` | API objects → view models in `chat/types.ts`; mention links; time formatting. |
+| `chat/api.ts` | Client wrapper: error shape, 401 handling. |
+
+## Wired to the API
+
+Sign in/out, conversations (mine, browse, create, join, archive, DMs), messages (send with `client_id`, edit, delete,
+paginate, threads, reactions, file upload and download), live updates and presence over the WebSocket, unread counts and
+read cursors, server-side search, notifications, tasks (per conversation, My tasks, subordinate picker, status changes),
+AI suggestions (accept, modify, reject, invite-and-accept) and the per-conversation TeamSync switch.
+
+## Not done yet
+
+Typing indicators in the UI, message/channel/task link embeds, `@here`/department mention autocomplete, slash commands,
+manual task creation dialog, project filters beyond the table, the admin page (users, departments, AI scopes, audit log),
+code syntax highlighting, virtualised message list, and "also send to channel".
+
+## Known gap with the backend
+
+The channel TeamSync switch calls `PATCH /admin/conversations/{id}/ai`, which is admin-only. Product wants the channel owner to
+control it, so a non-admin owner will get a 403 until that endpoint allows owners.

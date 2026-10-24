@@ -35,6 +35,8 @@ services:
   web:
     build: ./src/web
     ports: ["5173:5173"]
+    environment:
+      API_PROXY_TARGET: http://api:8000
     volumes: [./src/web/src:/app/src]
     depends_on: [api]
 

@@ -3,16 +3,10 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Download, FileText, MessageSquare, Pencil, Smile, Trash2 } from 'lucide-react'
 import type { Message } from './types'
-import { userById, users } from './data'
+import { userById } from './data'
 import { Avatar } from './ui'
 
 export const QUICK_EMOJI = ['👍', '✨', '🎉', '👀', '✅', '❤️']
-
-function mentionize(body: string) {
-  let out = body
-  for (const u of users) out = out.split(`@${u.name}`).join(`[@${u.name}](mention:${u.id})`)
-  return out
-}
 
 export function Markdown({ body, meId }: { body: string; meId: string }) {
   return (
@@ -23,7 +17,7 @@ export function Markdown({ body, meId }: { body: string; meId: string }) {
         components={{
           a: ({ href, children }) => {
             if (href?.startsWith('mention:')) {
-              const id = href.slice(8)
+              const id = href.slice(href.lastIndexOf('/') + 1)
               return <span className={`mention${id === meId ? ' mention--me' : ''}`}>{children}</span>
             }
             if (href && /^(https?:|mailto:)/i.test(href)) return <a href={href} target="_blank" rel="noreferrer noopener">{children}</a>
@@ -31,13 +25,13 @@ export function Markdown({ body, meId }: { body: string; meId: string }) {
           },
         }}
       >
-        {mentionize(body)}
+        {body}
       </ReactMarkdown>
     </div>
   )
 }
 
-export function FileCard({ name, size }: { name: string; size: string }) {
+export function FileCard({ id, name, size }: { id: string; name: string; size: string }) {
   return (
     <div className="file-card">
       <span className="file-card__icon"><FileText size={18} /></span>
@@ -45,7 +39,7 @@ export function FileCard({ name, size }: { name: string; size: string }) {
         <strong>{name}</strong>
         <span>{size}</span>
       </div>
-      <button className="icon-btn" aria-label={`Download ${name}`} disabled><Download size={17} /></button>
+      <a className="icon-btn" aria-label={`Download ${name}`} href={`/files/${id}`} download={name}><Download size={17} /></a>
     </div>
   )
 }
@@ -66,16 +60,17 @@ export default function MessageItem({ message, meId, replyCount, inThread, onRea
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(message.body)
   const [pickerOpen, setPickerOpen] = useState(false)
-  const mine = message.authorId === meId
+  const mine = message.authorId === meId && !message.pending
 
   return (
-    <article className="msg" id={`msg-${message.id}`}>
+    <article className={`msg${message.pending ? ' is-pending' : ''}`} id={`msg-${message.id}`}>
       <Avatar user={author} size={40} />
       <div className="msg__main">
         <div className="msg__meta">
           <span className="msg__author">{author?.name}</span>
           <span className="msg__time">{message.time}</span>
           {message.edited && <span className="msg__time">(edited)</span>}
+          {message.failed && <span className="msg__failed">Not sent</span>}
         </div>
 
         {editing ? (
@@ -90,7 +85,7 @@ export default function MessageItem({ message, meId, replyCount, inThread, onRea
           <Markdown body={message.body} meId={meId} />
         )}
 
-        {message.files?.map(f => <FileCard key={f.id} name={f.name} size={f.size} />)}
+        {message.files?.map(f => <FileCard key={f.id} id={f.id} name={f.name} size={f.size} />)}
 
         {(Object.keys(message.reactions).length > 0 || (!inThread && replyCount > 0)) && (
           <div className="msg__reactions">

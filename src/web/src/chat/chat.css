@@ -453,3 +453,20 @@ button.ts-note:hover { background: var(--blue-wash); color: var(--blue-ink); }
 .suggest__sub { line-height: 1.35; }
 .suggest__row { gap: 8px 16px; }
 .suggest__row strong { margin-left: 0; }
+
+/* ---------- Sign-in & status ---------- */
+.shell--center { display: grid; place-items: center; }
+.login { display: grid; gap: 14px; width: min(380px, 100%); padding: 32px 28px; background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+.login h1 { margin: 6px 0 0; font-size: 22px; letter-spacing: -.01em; }
+.login p { margin: 0; }
+.login label { display: grid; gap: 6px; font-weight: 600; font-size: 13px; }
+.login input { padding: 10px 12px; border: 1px solid #d6deec; border-radius: 10px; font-weight: 400; }
+.login input:focus-visible { outline: 2px solid var(--blue); outline-offset: 0; }
+.login .btn { padding: 11px 16px; }
+.login__error { color: var(--red); font-size: 13px; }
+.toast { position: fixed; left: 50%; bottom: 24px; z-index: 80; display: flex; align-items: center; gap: 12px; max-width: min(520px, calc(100vw - 32px)); padding: 10px 14px; transform: translateX(-50%); background: #18233a; color: #fff; border-radius: 12px; box-shadow: var(--shadow); font-size: 13.5px; }
+.toast button { background: none; border: 0; color: #cfe0ff; font-weight: 600; }
+.conn { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; background: var(--amber-bg); color: var(--amber-ink); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.msg.is-pending { opacity: .6; }
+.msg__failed { color: var(--red); font-size: 12px; }
+.load-more { display: block; margin: 8px auto; }

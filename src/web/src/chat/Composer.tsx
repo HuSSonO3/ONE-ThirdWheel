@@ -8,7 +8,7 @@ const EMOJI = ['👍', '🎉', '✨', '👀', '✅', '🙏', '😄', '🚀', '�
 interface Props {
   value: string
   onChange: (v: string) => void
-  onSend: (body: string, files: FileAttachment[]) => void
+  onSend: (body: string, files: File[]) => void
   members: User[]
   placeholder: string
   compact?: boolean
@@ -18,7 +18,7 @@ export default function Composer({ value, onChange, onSend, members, placeholder
   const ref = useRef<HTMLTextAreaElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [lang, setLang] = useState('typescript')
-  const [files, setFiles] = useState<FileAttachment[]>([])
+  const [files, setFiles] = useState<(FileAttachment & { file: File })[]>([])
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [mention, setMention] = useState<string | null>(null)
 
@@ -45,7 +45,7 @@ export default function Composer({ value, onChange, onSend, members, placeholder
 
   function send() {
     if (!canSend) return
-    onSend(value.trim(), files)
+    onSend(value.trim(), files.map(f => f.file))
     setFiles([])
     setMention(null)
   }
@@ -68,7 +68,7 @@ export default function Composer({ value, onChange, onSend, members, placeholder
   }
   function addFiles(list: FileList | null) {
     if (!list) return
-    const next = [...list].map(f => ({ id: crypto.randomUUID(), name: f.name, size: f.size > 1024 * 1024 ? `${(f.size / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB` }))
+    const next = [...list].map(f => ({ id: crypto.randomUUID(), file: f, name: f.name, size: f.size > 1024 * 1024 ? `${(f.size / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB` }))
     setFiles(cur => [...cur, ...next])
   }
   const suggestions = mention === null ? [] : members.filter(u => u.name.toLowerCase().includes(mention)).slice(0, 5)

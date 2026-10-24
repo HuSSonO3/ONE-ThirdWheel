@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Bell, Menu, Search } from 'lucide-react'
-import type { AppNotification, Conversation, Message, User } from './types'
-import { conversationTitle, userById } from './data'
+import type { components } from '../api/schema'
+import type { AppNotification, User } from './types'
+import { userById } from './data'
 import { Avatar } from './ui'
+
+type Hit = components['schemas']['SearchHit']
 
 interface Props {
   me: User
   crumb: string
-  conversations: Conversation[]
-  messages: Message[]
   notifications: AppNotification[]
+  onSearch: (q: string) => Promise<Hit[]>
   onMenu: () => void
   onOpenResult: (conversationId: string, messageId: string) => void
   onOpenNotification: (n: AppNotification) => void
@@ -17,11 +19,12 @@ interface Props {
   embedded?: boolean
 }
 
-export default function TopBar({ me, crumb, conversations, messages, notifications, onMenu, onOpenResult, onOpenNotification, onMarkAllRead, embedded }: Props) {
+export default function TopBar({ me, crumb, notifications, onSearch, onMenu, onOpenResult, onOpenNotification, onMarkAllRead, embedded }: Props) {
   const [q, setQ] = useState('')
   const [focus, setFocus] = useState(false)
   const [bell, setBell] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [results, setResults] = useState<Hit[] | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -30,18 +33,18 @@ export default function TopBar({ me, crumb, conversations, messages, notificatio
     return () => window.removeEventListener('keydown', h)
   }, [embedded])
 
-  const results = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    if (!term) return []
-    const accessible = new Map(conversations.filter(c => c.isPublic || c.memberIds.includes(me.id)).map(c => [c.id, c]))
-    return messages
-      .filter(m => accessible.has(m.conversationId) && `${userById(m.authorId)?.name} ${m.body}`.toLowerCase().includes(term))
-      .slice(0, 8)
-      .map(m => ({ m, c: accessible.get(m.conversationId)! }))
-  }, [q, messages, conversations, me.id])
+  // Debounced server search (full-text, filtered by access on the server).
+  useEffect(() => {
+    const term = q.trim()
+    if (!term) { setResults(null); return }
+    let stale = false
+    const t = window.setTimeout(() => { onSearch(term).then(r => { if (!stale) setResults(r) }).catch(() => { if (!stale) setResults([]) }) }, 250)
+    return () => { stale = true; window.clearTimeout(t) }
+  }, [q, onSearch])
 
-  const Wrapper = embedded ? 'div' : 'header'
   const unread = notifications.filter(n => !n.read).length
+  const Wrapper = embedded ? 'div' : 'header'
+  const strip = (s: string) => s.replace(/\*\*/g, '').replace(/\[([^\]]*)\]\(mention:[^)]*\)/g, '$1').replace(/\]\(mention:[^)]*\)/g, '')
 
   return (
     <Wrapper className={embedded ? 'topbar topbar--embedded' : 'topbar'}>
@@ -56,24 +59,25 @@ export default function TopBar({ me, crumb, conversations, messages, notificatio
             onMouseDown={e => e.preventDefault()} onClick={() => setSearchOpen(o => !o)}><Search size={19} /></button>
         )}
         {(!embedded || searchOpen) && <div className={embedded ? 'search search--drop' : 'search'}>
-        <Search size={17} />
-        <input ref={inputRef} type="search" placeholder="Search messages" aria-label="Search messages" value={q}
-          onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)} onBlur={() => setTimeout(() => { setFocus(false); if (embedded) setSearchOpen(false) }, 150)}
-          onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setQ('') } }} autoFocus={embedded} />
-        <kbd>⌘ K</kbd>
-        {focus && q.trim() && (
-          <div className="popover popover--results" role="listbox">
-            {results.length === 0 && <div className="popover__empty">No messages match “{q}”.</div>}
-            {results.map(({ m, c }) => (
-              <button key={m.id} role="option" aria-selected="false" onMouseDown={e => e.preventDefault()}
-                onClick={() => { onOpenResult(c.id, m.parentId ?? m.id); setQ(''); setSearchOpen(false) }}>
-                <small>{c.kind === 'dm' ? conversationTitle(c, me.id) : `# ${c.name}`} · {userById(m.authorId)?.name}</small>
-                <span>{m.body.length > 90 ? m.body.slice(0, 90) + '…' : m.body}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>}
+          <Search size={17} />
+          <input ref={inputRef} type="search" placeholder="Search messages" aria-label="Search messages" value={q}
+            onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)}
+            onBlur={() => setTimeout(() => { setFocus(false); if (embedded) setSearchOpen(false) }, 150)}
+            onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setQ('') } }} autoFocus={embedded} />
+          <kbd>⌘ K</kbd>
+          {(focus || embedded) && q.trim() && results && (
+            <div className="popover popover--results" role="listbox">
+              {results.length === 0 && <div className="popover__empty">No messages match “{q}”.</div>}
+              {results.map(h => (
+                <button key={h.message.id} role="option" aria-selected="false" onMouseDown={e => e.preventDefault()}
+                  onClick={() => { onOpenResult(h.conversation.id, h.message.parent_id ?? h.message.id); setQ(''); setSearchOpen(false) }}>
+                  <small>{h.conversation.kind === 'dm' ? 'Direct message' : `# ${h.conversation.name ?? ''}`} · {userById(h.message.author_id)?.name}</small>
+                  <span>{strip(h.headline)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>}
       </div>
 
       <div className="bell-wrap">
@@ -83,6 +87,7 @@ export default function TopBar({ me, crumb, conversations, messages, notificatio
         {bell && (
           <div className="popover popover--bell">
             <div className="popover__head"><strong>Notifications</strong><button className="link-btn" onClick={onMarkAllRead}>Mark all read</button></div>
+            {notifications.length === 0 && <div className="popover__empty">You’re all caught up.</div>}
             {notifications.map(n => (
               <button key={n.id} className={n.read ? '' : 'is-unread'} onClick={() => { setBell(false); onOpenNotification(n) }}>
                 <span>{n.text}</span><small>{n.time}</small>
