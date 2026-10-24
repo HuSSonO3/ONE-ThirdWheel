@@ -49,11 +49,7 @@ paths:
           description: OK
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, const: ok }
-                required: [status]
+              schema: { $ref: "#/components/schemas/Health" }
 
   # ---------------------------------------------------------------- auth (1.1)
   /auth/login:
@@ -374,11 +370,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                user_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, minItems: 1 }
-              required: [user_ids]
+            schema: { $ref: "#/components/schemas/AddMembersRequest" }
       responses:
         "200":
           description: The resulting member list.
@@ -612,13 +604,7 @@ paths:
           description: The first N lines of a snippet.
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  text: { type: string }
-                  truncated: { type: boolean }
-                  language: { type: [string, "null"] }
-                required: [text, truncated, language]
+              schema: { $ref: "#/components/schemas/SnippetPreview" }
         "403": { $ref: "#/components/responses/Forbidden" }
 
   # ---------------------------------------------------------------- embeds (1.15, 2.5)
@@ -669,11 +655,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                last_read_seq: { type: integer, format: int64, minimum: 0 }
-              required: [last_read_seq]
+            schema: { $ref: "#/components/schemas/MarkReadRequest" }
       responses:
         "200":
           description: The resulting cursor.
@@ -778,7 +760,10 @@ paths:
     patch:
       tags: [tasks]
       operationId: updateTask
-      description: Any caller who `can_see` the task. Changing `assignee_id` re-runs `can_assign`.
+      description: |
+        Callers who `can_edit_task`: the assignee, the creator, a superior of the assignee, or a current
+        member of the source conversation (department colleagues can see but not edit). Changing
+        `assignee_id` re-runs `can_assign`.
       requestBody:
         required: true
         content:
@@ -904,12 +889,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                conversation_id: { $ref: "#/components/schemas/Uuid" }
-                text: { type: string, pattern: "^/" }
-              required: [conversation_id, text]
+            schema: { $ref: "#/components/schemas/CommandRequest" }
       responses:
         "200":
           description: Command result.
@@ -938,11 +918,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                scopes: { type: array, items: { $ref: "#/components/schemas/Scope" } }
-                active: { type: boolean }
+            schema: { $ref: "#/components/schemas/AiConfigUpdate" }
       responses:
         "200":
           description: Updated.
@@ -971,11 +947,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                ai_enabled: { type: boolean }
-              required: [ai_enabled]
+            schema: { $ref: "#/components/schemas/ConversationAiUpdate" }
       responses:
         "200":
           description: Updated.
@@ -1024,22 +996,13 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                from: { type: string, minLength: 1 }
-                to: { type: string, minLength: 1 }
-              required: [from, to]
+            schema: { $ref: "#/components/schemas/ProjectRename" }
       responses:
         "200":
           description: Number of tasks relabelled.
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  updated: { type: integer }
-                required: [updated]
+              schema: { $ref: "#/components/schemas/ProjectRenameResult" }
         "403": { $ref: "#/components/responses/Forbidden" }
 
 components:
@@ -1086,6 +1049,12 @@ components:
   schemas:
     Uuid: { type: string, format: uuid }
     Timestamp: { type: string, format: date-time }
+
+    Health:
+      type: object
+      properties:
+        status: { type: string, const: ok }
+      required: [status]
 
     Error:
       type: object
@@ -1260,6 +1229,11 @@ components:
         muted: { type: boolean }
         ai_opt_in: { type: boolean }
       required: [user, role, joined_at, left_at, muted, ai_opt_in]
+    AddMembersRequest:
+      type: object
+      properties:
+        user_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" }, minItems: 1 }
+      required: [user_ids]
     MembershipUpdate:
       type: object
       properties:
@@ -1347,6 +1321,13 @@ components:
       required: [parent, replies]
 
     # ---- files
+    SnippetPreview:
+      type: object
+      properties:
+        text: { type: string }
+        truncated: { type: boolean }
+        language: { type: [string, "null"] }
+      required: [text, truncated, language]
     FileKind: { type: string, enum: [file, image, snippet, avatar] }
     FileMeta:
       type: object
@@ -1430,6 +1411,11 @@ components:
       required: [message, conversation, headline, rank]
 
     # ---- read cursors & notifications
+    MarkReadRequest:
+      type: object
+      properties:
+        last_read_seq: { type: integer, format: int64, minimum: 0 }
+      required: [last_read_seq]
     ReadCursor:
       type: object
       properties:
@@ -1570,6 +1556,12 @@ components:
       required: [suggestion, task]
 
     # ---- commands
+    CommandRequest:
+      type: object
+      properties:
+        conversation_id: { $ref: "#/components/schemas/Uuid" }
+        text: { type: string, pattern: "^/" }
+      required: [conversation_id, text]
     CommandResult:
       type: object
       properties:
@@ -1624,3 +1616,24 @@ components:
         source_message_ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
         created_at: { $ref: "#/components/schemas/Timestamp" }
       required: [id, run_id, tool_name, arguments, scope_check, result, status, source_message_ids, created_at]
+    AiConfigUpdate:
+      type: object
+      properties:
+        scopes: { type: array, items: { $ref: "#/components/schemas/Scope" } }
+        active: { type: boolean }
+    ConversationAiUpdate:
+      type: object
+      properties:
+        ai_enabled: { type: boolean }
+      required: [ai_enabled]
+    ProjectRename:
+      type: object
+      properties:
+        from: { type: string, minLength: 1 }
+        to: { type: string, minLength: 1 }
+      required: [from, to]
+    ProjectRenameResult:
+      type: object
+      properties:
+        updated: { type: integer }
+      required: [updated]

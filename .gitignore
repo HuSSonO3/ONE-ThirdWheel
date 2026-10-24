@@ -13,3 +13,6 @@ __pycache__/
 # Secrets
 .env
 .data/
+
+# Local agent instructions
+CLAUDE.md

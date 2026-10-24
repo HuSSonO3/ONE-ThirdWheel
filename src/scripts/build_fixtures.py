@@ -10,11 +10,14 @@ in expected.json. Filler messages come from template pools that are deliberately
 import argparse
 import json
 import random
-import re
 import sys
 import uuid
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from api.text import extract  # noqa: E402  (shared with the message service)
 
 OUT = Path(__file__).resolve().parent.parent / "fixtures"
 NS = uuid.UUID("6f0b6c1e-3a52-4c1e-9a43-0d1f2c7b5e10")
@@ -661,27 +664,6 @@ suggestion("s11", ["p1r2"], "status_change", {"task_id": uid("task", "t1"), "new
 
 
 # ---------------------------------------------------------------- assembly
-
-MENTION_RE = re.compile(r"\[@[^\]]+\]\(mention:(user|department)/([0-9a-f-]{36})\)")
-REF_RE = re.compile(r"/c/([0-9a-f-]{36})(?:/m/([0-9a-f-]{36}))?|/t/([0-9a-f-]{36})")
-
-
-def extract(body: str) -> tuple[list[dict], list[dict]]:
-    mentions = [
-        {"kind": k, "user_id": i if k == "user" else None, "department_id": i if k == "department" else None}
-        for k, i in MENTION_RE.findall(body)
-    ]
-    mentions += [{"kind": w, "user_id": None, "department_id": None} for w in ("channel", "here") if f"@{w}" in body]
-    refs = []
-    for conv, message, task_id in REF_RE.findall(body):
-        if task_id:
-            refs.append({"target_type": "task", "target_id": task_id})
-        elif message:
-            refs.append({"target_type": "message", "target_id": message})
-        else:
-            refs.append({"target_type": "channel", "target_id": conv})
-    return mentions, refs
-
 
 def build() -> dict[str, object]:
     rng = random.Random(2026)

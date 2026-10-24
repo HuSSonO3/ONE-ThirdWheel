@@ -1,12 +1,15 @@
 import uuid
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import CheckConstraint, DateTime, MetaData, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
+    # Fetch server defaults (ids, timestamps, now()) with RETURNING on insert.
+    __mapper_args__ = {"eager_defaults": True}
+
     metadata = MetaData(
         naming_convention={
             "ix": "ix_%(column_0_label)s",
@@ -23,7 +26,9 @@ def uuid_pk() -> Mapped[uuid.UUID]:
 
 
 def now_column() -> Mapped[datetime]:
-    return mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Python default for ORM inserts (wall-clock time, distinct per request even inside one transaction);
+    # the server default covers raw SQL.
+    return mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), server_default=func.now())
 
 
 def one_of(column: str, values: Iterable[str]) -> CheckConstraint:
