@@ -15,8 +15,9 @@ an invalid session closes with code `4401`. A browser `Origin` outside the serve
 - `conversation_id`: null for frames not tied to a conversation.
 - `data`: per type below. For persisted events it is the event's `payload` from `events-row.md`
   plus the fields listed here, so the client can render without a REST call. Two exceptions:
-  `prior_body_md` (edit history, AI-only) is never sent, and a message that has since been deleted
-  replays with an empty `body_md`, `mentions` and `refs`.
+  `prior_body_md` (edit history, AI-only) is never sent, and for `message.created`/`message.updated`
+  the `body_md`, `mentions` and `refs` are always the message's current state (empty once deleted),
+  so replaying an old event never reveals pre-edit text.
 
 ## Persisted events (replayable)
 

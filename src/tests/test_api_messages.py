@@ -181,6 +181,20 @@ def test_editing_deleting_and_reacting_need_membership(api_as) -> None:
     assert ken.delete(f"/messages/{ids.message('p20')}").status_code == 403
 
 
+def test_replay_shows_current_text_not_the_original(api_as, session) -> None:
+    from sqlalchemy import select
+
+    from api import realtime
+    from api.models import Event, User
+
+    alice = api_as("alice")
+    m = post(alice, "website", f"Launch is on the 3rd, {ids.mention('bob')}").json()
+    alice.patch(f"/messages/{m['id']}", json={"body_md": "Launch date TBD"})
+    created = session.scalars(select(Event).where(Event.subject_id == m["id"], Event.type == "message.created")).one()
+    data = realtime.frame_for(session, created, session.get(User, ids.user("bob")))["data"]
+    assert data["body_md"] == "Launch date TBD" and data["mentions"] == []
+
+
 def test_replay_never_leaks_deleted_text_or_edit_history(api_as, session) -> None:
     from sqlalchemy import select
 

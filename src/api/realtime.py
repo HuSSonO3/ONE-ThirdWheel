@@ -27,6 +27,8 @@ from api.models import (
     Event,
     File,
     Message,
+    MessageMention,
+    MessageRef,
     Task,
     User,
     UserClosure,
@@ -178,12 +180,24 @@ def _extra(db: Session, event: Event, viewer: User) -> dict[str, Any]:
 
 
 def _client_payload(db: Session, event: Event) -> dict[str, Any]:
-    """The events row minus what clients must not get: edit history (AI-only) and text of deleted messages."""
+    """The events row minus edit history, which is AI-only.
+
+    Message text, mentions and links are always the message's *current* state (empty once deleted), so
+    replaying an old `message.created` never reveals what a message said before it was edited.
+    """
     payload = {k: v for k, v in event.payload.items() if k != "prior_body_md"}
     if event.type in ("message.created", "message.updated"):
         m = db.get(Message, event.subject_id)
         if m is None or m.deleted_at is not None:
             payload.update(body_md="", mentions=[], refs=[])
+        else:
+            payload.update(
+                body_md=m.body_md,
+                mentions=[{"kind": x.kind, "user_id": x.user_id, "department_id": x.department_id}
+                          for x in db.scalars(select(MessageMention).where(MessageMention.message_id == m.id))],
+                refs=[{"target_type": x.target_type, "target_id": x.target_id}
+                      for x in db.scalars(select(MessageRef).where(MessageRef.message_id == m.id))],
+            )
     return payload
 
 
