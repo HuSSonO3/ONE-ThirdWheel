@@ -11,7 +11,8 @@ import TopBar from './TopBar'
 import MessageItem from './MessageItem'
 import Composer from './Composer'
 import TeamSyncPanel from './TeamSyncPanel'
-import { AdminView, ConversationTasks, MyTasks } from './TaskViews'
+import AdminView from './AdminView'
+import { ConversationTasks, MyTasks } from './TaskViews'
 import { Avatar, Dialog } from './ui'
 
 type Modal = null | 'browse' | 'channel' | 'dm' | { modify: Suggestion } | { remove: string } | { archive: string }
@@ -79,11 +80,13 @@ export default function ChatApp({ meUser, onLogout }: { meUser: components['sche
     await d.ensure(id).catch(() => {})
   }
   const openThread = (id: string | null) => { setThreadId(id); if (id) { setPanelOpen(false); void d.openThread(id) } }
+  const openModify = (s: Suggestion) => { void d.open(s.conversationId); setModal({ modify: s }) }
   const togglePanel = () => { setPanelOpen(o => !o); setThreadId(null) }
 
   const deleteTarget = typeof modal === 'object' && modal && 'remove' in modal ? modal.remove : null
   const archiveTarget = typeof modal === 'object' && modal && 'archive' in modal ? modal.archive : null
   const modifyTarget = typeof modal === 'object' && modal && 'modify' in modal ? modal.modify : null
+  const modifyConv = modifyTarget ? d.conversations.find(x => x.id === modifyTarget.conversationId) : undefined
   const crumb = view === 'chat' ? title : view === 'tasks' ? 'My tasks' : 'Admin & people'
   const topBar = (embedded: boolean) => (
     <TopBar embedded={embedded} me={me} crumb={crumb} notifications={d.notifications} onSearch={d.search}
@@ -106,7 +109,8 @@ export default function ChatApp({ meUser, onLogout }: { meUser: components['sche
           {view !== 'chat' && topBar(false)}
 
           {view === 'tasks' && (
-            <div className="scroll"><MyTasks me={me} tasks={d.myTasks} reports={d.reports} reportTasks={d.reportTasks} onLoadReport={d.loadReportTasks} onStatus={d.setTaskStatus} /></div>
+            <div className="scroll"><MyTasks me={me} tasks={d.myTasks} reports={d.reports} reportTasks={d.reportTasks} suggestions={d.mySuggestions} conversations={d.conversations}
+              onLoadReport={d.loadReportTasks} onStatus={d.setTaskStatus} onAccept={(s, invite) => void d.accept(s, invite)} onModify={openModify} onReject={s => void d.reject(s)} /></div>
           )}
           {view === 'admin' && <div className="scroll"><AdminView people={d.people} /></div>}
 
@@ -198,7 +202,7 @@ export default function ChatApp({ meUser, onLogout }: { meUser: components['sche
                 {panelOpen && tab === 'messages' && (
                   <TeamSyncPanel conversation={conversation} me={me} members={members} messages={topLevel} tasks={convTasks} suggestions={convSuggestions}
                     on={tsOn} onClose={() => setPanelOpen(false)} onViewTasks={() => setTab('tasks')}
-                    onAccept={(s, invite) => void d.accept(s, invite)} onModify={s => setModal({ modify: s })} onReject={s => void d.reject(s)} />
+                    onAccept={(s, invite) => void d.accept(s, invite)} onModify={openModify} onReject={s => void d.reject(s)} />
                 )}
 
                 {thread && tab === 'messages' && (
@@ -240,7 +244,7 @@ export default function ChatApp({ meUser, onLogout }: { meUser: components['sche
       {modal === 'channel' && <NewChannel onClose={() => setModal(null)} onCreate={(name, description, isPublic) => {
         void d.createConversation({ kind: 'channel', name, description, is_public: isPublic }).then(c => selectConversation(c.id)); setModal(null)
       }} />}
-      {modifyTarget && conversation && <ModifyTask s={modifyTarget} conversation={conversation} meId={meId} people={d.people} onClose={() => setModal(null)}
+      {modifyConv && modifyTarget && <ModifyTask s={modifyTarget} conversation={modifyConv} meId={meId} people={d.people} onClose={() => setModal(null)}
         onSave={over => { void d.modify(modifyTarget, over); setModal(null) }} />}
       {deleteTarget && conversation && (
         <Dialog title="Delete this message?" onClose={() => setModal(null)}>

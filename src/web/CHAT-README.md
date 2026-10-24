@@ -41,12 +41,12 @@ Checks: `npm run lint`, `npm run build` (type-checks). After editing `contracts/
 Sign in/out, conversations (mine, browse, create, join, archive, DMs), messages (send with `client_id`, edit, delete,
 paginate, threads, reactions, file upload and download), live updates and presence over the WebSocket, unread counts and
 read cursors, server-side search, notifications, tasks (per conversation, My tasks, subordinate picker, status changes),
-AI suggestions (accept, modify, reject, invite-and-accept) and the per-conversation TeamSync switch.
+AI suggestions (in the channel panel and in "Suggested for you" on My tasks: accept, modify, reject, invite-and-accept), the per-conversation TeamSync switch, and the admin TeamSync AI page (permission scopes, where it is on, and the run / tool-call audit log).
 
 ## Not done yet
 
 Typing indicators in the UI, message/channel/task link embeds, `@here`/department mention autocomplete, slash commands,
-manual task creation dialog, project filters beyond the table, the admin page (users, departments, AI scopes, audit log),
+manual task creation dialog, project filters beyond the table, user and department management in the admin page,
 code syntax highlighting, virtualised message list, and "also send to channel".
 
 ## Known gap with the backend

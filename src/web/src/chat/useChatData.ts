@@ -37,6 +37,7 @@ export function useChatData(meUser: S['User'], activeId: string | null) {
   const [reports, setReports] = useState<User[]>([])
   const [reportTasks, setReportTasks] = useState<Record<string, Task[]>>({})
   const [rawSuggestions, setRawSuggestions] = useState<Record<string, S['Suggestion'][]>>({})
+  const [mySuggestionIds, setMySuggestionIds] = useState<Set<string>>(new Set())
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -65,6 +66,10 @@ export function useChatData(meUser: S['User'], activeId: string | null) {
   const suggestions = useMemo(
     () => Object.fromEntries(Object.entries(rawSuggestions).map(([k, v]) => [k, v.map(x => toSuggestion(x, taskTitle))])) as Record<string, Suggestion[]>,
     [rawSuggestions, taskTitle])
+
+  const mySuggestions = useMemo(
+    () => Object.values(suggestions).flat().filter(x => mySuggestionIds.has(x.id) && x.status === 'pending'),
+    [suggestions, mySuggestionIds])
 
   const conversations = useMemo(() => convs.map(c => ({ ...c, memberIds: memberIds[c.id] ?? [] })), [convs, memberIds])
 
@@ -104,16 +109,23 @@ export function useChatData(meUser: S['User'], activeId: string | null) {
     let cancelled = false
     ;(async () => {
       try {
-        const [users, mine, notes, subs] = await Promise.all([
+        const [users, mine, notes, subs, forMe] = await Promise.all([
           call(api.GET('/users', { params: { query: {} } })),
           call(api.GET('/conversations', { params: { query: { scope: 'mine' } } })),
           call(api.GET('/notifications', { params: { query: { limit: 30 } } })),
           call(api.GET('/me/subordinates')),
+          call(api.GET('/me/suggestions')),
         ])
         if (cancelled) return
         setPeople(users.map(toUser))
         setConvs(mine.map(toConversation))
         setNotifications(notes.map(toNotification))
+        setMySuggestionIds(new Set(forMe.map(x => x.id)))
+        setRawSuggestions(m => {
+          const next = { ...m }
+          for (const x of forMe) next[x.conversation_id] = [...(next[x.conversation_id] ?? []).filter(y => y.id !== x.id), x]
+          return next
+        })
         const ids = new Set(subs.map(s => s.id))
         setReports(users.filter(u => ids.has(u.id)).map(toUser))
         await loadMyTasks()
@@ -182,6 +194,7 @@ export function useChatData(meUser: S['User'], activeId: string | null) {
         break
       case 'suggestion.created': case 'suggestion.decided': {
         const s = d.suggestion as S['Suggestion'] | undefined
+        if (s && f.type === 'suggestion.created' && (s.payload as { assignee_id?: string }).assignee_id === meId) setMySuggestionIds(ids => new Set(ids).add(s.id))
         if (s) setRawSuggestions(m => {
           const list = m[s.conversation_id] ?? []
           return { ...m, [s.conversation_id]: list.some(x => x.id === s.id) ? list.map(x => (x.id === s.id ? s : x)) : [...list, s] }
@@ -392,7 +405,7 @@ export function useChatData(meUser: S['User'], activeId: string | null) {
 
   return {
     meId, people: directory, connected, loading, error, clearError: () => setError(null),
-    conversations, messages, hasMore, threads, tasks, myTasks, reports, reportTasks, suggestions, notifications, online,
+    conversations, mySuggestions, messages, hasMore, threads, tasks, myTasks, reports, reportTasks, suggestions, notifications, online,
     open, loadOlder: (id: string, seq: number) => loadMessages(id, seq).catch(fail), send, edit, remove, react, openThread,
     setTaskStatus, loadReportTasks, accept: (s: Suggestion, invite = false) => decide(s, 'accept', undefined, invite), reject: (s: Suggestion) => decide(s, 'reject'),
     modify: (s: Suggestion, over: Partial<Pick<Suggestion, 'title' | 'assigneeId' | 'project' | 'due'>>) => decide(s, 'modify', over),
