@@ -69,7 +69,7 @@ All code lives in `src/` (layout from `plan.md` §2).
 │   ├── web/             # FE · React + TypeScript (Vite); web/src/api/ is generated
 │   ├── api/             # BE · FastAPI: models, services, routers, access rules
 │   ├── ai/              # AI · worker, tools, dispatcher
-│   ├── scripts/         # shared · seed.py, gen_client.sh
+│   ├── scripts/         # shared · build_fixtures.py, seed.py, gen_client.sh
 │   ├── tests/
 │   └── pyproject.toml   # one Python workspace for api + ai
 ├── submission/          # Required submission documents
@@ -80,7 +80,20 @@ All code lives in `src/` (layout from `plan.md` §2).
 └── README.md
 ```
 
-Local setup: `docker compose up` (web on :5173, API on :8000, `GET /health`).
+### Local setup
+
+```bash
+docker compose up --build            # postgres, minio, api (runs migrations), web
+docker compose exec api python scripts/seed.py --reset   # load the fixtures
+```
+
+Web on http://localhost:5173, API on http://localhost:8000 (`GET /health`). Log in as any fixture
+user, e.g. `grace.liu@example.com` (admin) / `password123`. If port 5432 is taken on the host, set
+`POSTGRES_PORT=55432`.
+
+Contracts live in `src/contracts/` (`openapi.yaml`, `ws-events.md`, `events-row.md`,
+`tool-interface.md`, and `DECISIONS.md` for where they refine the feature spec). After editing
+`openapi.yaml`, run `src/scripts/gen_client.sh`; after editing `scripts/build_fixtures.py`, run it.
 
 ### Architecture
 

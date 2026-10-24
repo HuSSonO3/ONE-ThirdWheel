@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "id": "c6ed4dc8-8bdb-5184-a77f-4349e1a1d1af",
+    "name": "Engineering",
+    "created_at": "2026-10-01T01:00:00Z"
+  },
+  {
+    "id": "cffb61d0-2e59-5985-9964-a04184272b2e",
+    "name": "Design",
+    "created_at": "2026-10-01T01:00:00Z"
+  },
+  {
+    "id": "b6b8ce07-7da1-58bb-a0dc-4c869d28913c",
+    "name": "Marketing",
+    "created_at": "2026-10-01T01:00:00Z"
+  },
+  {
+    "id": "eccd99b3-55db-5efa-a4ee-434bdeab7ba9",
+    "name": "Operations",
+    "created_at": "2026-10-01T01:00:00Z"
+  },
+  {
+    "id": "ad5c2aa1-596c-5cea-8b2b-d23b0ec789eb",
+    "name": "Finance",
+    "created_at": "2026-10-01T01:00:00Z"
+  }
+]
