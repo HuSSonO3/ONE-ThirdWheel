@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chat
+      POSTGRES_DB: chat
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat -d chat"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # S3-compatible object store. MinIO stopped publishing community images, so dev uses SeaweedFS
+  # (contracts/DECISIONS.md #17). Nothing reads it until file uploads (slice B3); dev files use local disk.
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    command: server -s3 -dir=/data
+    ports: ["8333:8333"]
+    volumes: [s3data:/data]
+
+  api:
+    build: ./src
+    command: sh -c "alembic upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      DATABASE_URL: postgresql+psycopg://chat:chat@postgres:5432/chat
+    ports: ["8000:8000"]
+    volumes: [./src:/app]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build: ./src/web
+    ports: ["5173:5173"]
+    volumes: [./src/web/src:/app/src]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  s3data:

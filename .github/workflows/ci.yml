@@ -1,0 +1,55 @@
+name: CI
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: src } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run python scripts/build_fixtures.py --check
+      - run: uv run pytest
+
+  db:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: src } }
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_USER: chat, POSTGRES_PASSWORD: chat, POSTGRES_DB: chat }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U chat" --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      DATABASE_URL: postgresql+psycopg://chat:chat@localhost:5432/chat
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - name: Migrations apply to a clean database
+        run: uv run alembic upgrade head
+      - name: Models and migrations agree
+        run: uv run alembic check
+      - name: Downgrade and re-apply
+        run: uv run alembic downgrade base && uv run alembic upgrade head
+      - run: uv run python scripts/seed.py
+      - run: uv run python scripts/seed.py --reset
+      - run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: src/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Generated client is up to date
+        run: ../scripts/gen_client.sh && git diff --exit-code src/api

@@ -1,0 +1,512 @@
+[
+  {
+    "id": "377c4a11-4c2b-594b-bf1c-33287ac2cb80",
+    "title": "Plan the Postgres 17 upgrade",
+    "description_md": "",
+    "assignee_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by_ai": false,
+    "source_conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "project": "infra",
+    "status": "in_progress",
+    "priority": "normal",
+    "due_at": "2026-10-19T10:00:00Z",
+    "created_at": "2026-10-12T02:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "727e7cdf-4f63-5b82-bf93-c3c4beedb12f"
+    ],
+    "history": [
+      {
+        "actor_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-12T08:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "7b1ee1ae-873b-58eb-af1f-ed63fe9f18b8",
+    "title": "Set up error-budget dashboard in Grafana",
+    "description_md": "",
+    "assignee_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by_ai": true,
+    "source_conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "project": "infra",
+    "status": "done",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-12T03:20:00Z",
+    "completed_at": "2026-10-14T00:20:00Z",
+    "source_message_ids": [
+      "e8504954-7ec4-5eb3-883d-1f0ba6c8a846"
+    ],
+    "history": [
+      {
+        "actor_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-13T09:20:00Z"
+      },
+      {
+        "actor_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-14T00:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "87e9bb70-4176-59e4-850b-9a95f4ad2a99",
+    "title": "Draft the launch fee schedule",
+    "description_md": "",
+    "assignee_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+    "created_by": "e2031620-5441-5fd9-8417-531eeda70208",
+    "created_by_ai": false,
+    "source_conversation_id": "02df59e8-4dcc-56be-b269-d9c6f7032df4",
+    "project": "payments",
+    "status": "done",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-12T06:20:00Z",
+    "completed_at": "2026-10-13T19:20:00Z",
+    "source_message_ids": [
+      "1ac0246a-fb4f-586c-98d9-77ff35c611aa"
+    ],
+    "history": [
+      {
+        "actor_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-12T19:20:00Z"
+      },
+      {
+        "actor_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-13T19:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "c13dd254-2a1e-55f7-a853-f520f94377b3",
+    "title": "Integrate Stripe webhooks in billing service",
+    "description_md": "",
+    "assignee_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by_ai": false,
+    "source_conversation_id": "02df59e8-4dcc-56be-b269-d9c6f7032df4",
+    "project": "payments",
+    "status": "in_progress",
+    "priority": "normal",
+    "due_at": "2026-10-20T10:00:00Z",
+    "created_at": "2026-10-13T02:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "392167e4-32d2-5e5d-9b7f-fdbe3a3047d5"
+    ],
+    "history": [
+      {
+        "actor_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-13T08:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "de226079-9985-5fa2-b3a0-cfa89b5bf202",
+    "title": "Deliver three logo directions",
+    "description_md": "",
+    "assignee_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+    "created_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "created_by_ai": true,
+    "source_conversation_id": "0373b2a0-698c-55db-94a4-d4740065da13",
+    "project": "brand-refresh",
+    "status": "done",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-13T07:20:00Z",
+    "completed_at": "2026-10-14T13:20:00Z",
+    "source_message_ids": [
+      "dfa05d51-4ae3-59b1-a9a8-5056c44fa300"
+    ],
+    "history": [
+      {
+        "actor_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-13T17:20:00Z"
+      },
+      {
+        "actor_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-14T13:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "98f2f136-d440-566e-b902-d0d537ebfd14",
+    "title": "Prepare October campaign report",
+    "description_md": "",
+    "assignee_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+    "created_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "created_by_ai": false,
+    "source_conversation_id": "dff9e34f-0372-5e88-ade7-736cb95bf761",
+    "project": null,
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-20T10:00:00Z",
+    "created_at": "2026-10-13T08:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "7977a40c-71b4-5147-b8c0-981ac0ffbe97"
+    ],
+    "history": []
+  },
+  {
+    "id": "d4b2e641-cb57-538b-92e9-e2d3b67a5876",
+    "title": "Audit icon set for WCAG AA contrast",
+    "description_md": "",
+    "assignee_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+    "created_by": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+    "created_by_ai": false,
+    "source_conversation_id": "27466f31-ccda-56bf-b2e1-10de4db87b81",
+    "project": "brand-refresh",
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-21T10:00:00Z",
+    "created_at": "2026-10-14T02:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "8f81da6d-11ba-5153-9e6b-c9c61a2a80c4"
+    ],
+    "history": []
+  },
+  {
+    "id": "b3a1924d-b57a-532a-b722-e2e168f09f55",
+    "title": "Get quotes for standing desks",
+    "description_md": "",
+    "assignee_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+    "created_by": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+    "created_by_ai": false,
+    "source_conversation_id": "65989fac-8266-5bb7-8c89-297bc1f0e8b5",
+    "project": "office",
+    "status": "in_progress",
+    "priority": "normal",
+    "due_at": "2026-10-21T10:00:00Z",
+    "created_at": "2026-10-14T03:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "056bf62a-6977-50a4-9582-a827fb5bec1b"
+    ],
+    "history": [
+      {
+        "actor_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-14T07:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "816825c9-a14d-535b-8dd0-d45e4e05250d",
+    "title": "Close September accruals",
+    "description_md": "",
+    "assignee_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+    "created_by": "e2031620-5441-5fd9-8417-531eeda70208",
+    "created_by_ai": false,
+    "source_conversation_id": "bd9ccdd8-9e70-5776-bf58-17a1f8814535",
+    "project": "month-end",
+    "status": "done",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-14T06:20:00Z",
+    "completed_at": "2026-10-15T13:20:00Z",
+    "source_message_ids": [
+      "64e6977f-d5e6-5c84-b2b9-897c98fd44e9"
+    ],
+    "history": [
+      {
+        "actor_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-14T14:20:00Z"
+      },
+      {
+        "actor_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-15T13:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "60a6039b-5ab1-51c4-ba11-2e0ee669f707",
+    "title": "Update DNS records for docs subdomain",
+    "description_md": "",
+    "assignee_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+    "created_by": "d79e514a-4668-5259-9c6a-585ad147e529",
+    "created_by_ai": false,
+    "source_conversation_id": "5697410f-4c49-52e1-9ffd-055f667e7dad",
+    "project": "infra",
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-22T10:00:00Z",
+    "created_at": "2026-10-15T01:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "33a05931-b769-59f5-a6a0-023996773290"
+    ],
+    "history": []
+  },
+  {
+    "id": "7fd83f4d-7011-59b0-9df1-f0869521de77",
+    "title": "Roll out the password manager company-wide",
+    "description_md": "",
+    "assignee_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+    "created_by": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+    "created_by_ai": false,
+    "source_conversation_id": "9b1753ed-2daf-5dfc-bd44-7e0db2aa5f2a",
+    "project": "security",
+    "status": "in_progress",
+    "priority": "normal",
+    "due_at": "2026-10-22T10:00:00Z",
+    "created_at": "2026-10-15T02:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "4dbcc212-f7b4-5492-9642-6bb6c6372a80"
+    ],
+    "history": [
+      {
+        "actor_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-16T00:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "c9f25e05-20e6-5243-a521-52e91b0e2c7f",
+    "title": "Approve Dana's KubeCon budget",
+    "description_md": "",
+    "assignee_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+    "created_by_ai": false,
+    "source_conversation_id": "4d86c7f6-c8bc-5546-904e-f3d0b0eeb255",
+    "project": null,
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-22T10:00:00Z",
+    "created_at": "2026-10-15T08:20:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "22bdefb1-0fc5-548b-8e8b-f16ff0bc164d"
+    ],
+    "history": []
+  },
+  {
+    "id": "5a442edb-8b38-5360-8d1a-4d5db759e9e9",
+    "title": "Review PR #482 (rate limiter)",
+    "description_md": "",
+    "assignee_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+    "created_by": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+    "created_by_ai": false,
+    "source_conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "project": "infra",
+    "status": "done",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-16T02:20:00Z",
+    "completed_at": "2026-10-17T02:20:00Z",
+    "source_message_ids": [
+      "f9dcc199-f05f-5373-bac6-a388484b6de7"
+    ],
+    "history": [
+      {
+        "actor_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-16T21:20:00Z"
+      },
+      {
+        "actor_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-17T02:20:00Z"
+      }
+    ]
+  },
+  {
+    "id": "580017cf-6306-55c0-90bf-262791d0acd4",
+    "title": "Run a Lighthouse audit on the new landing page",
+    "description_md": "Copied from the source message because the assignee is not a member of #website (spec 2.7):\n\n> Priya — please run a Lighthouse audit on the new landing page this week.",
+    "assignee_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by_ai": false,
+    "source_conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "project": "website",
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-23T10:00:00Z",
+    "created_at": "2026-10-15T03:15:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "c1613ed8-2953-5557-9bd0-d9d06e2c7606"
+    ],
+    "history": []
+  },
+  {
+    "id": "8277b003-0577-59b1-b073-67d077d84e1b",
+    "title": "Fix the signup button 500 on the pricing page",
+    "description_md": "",
+    "assignee_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+    "created_by": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+    "created_by_ai": true,
+    "source_conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "project": "website",
+    "status": "in_progress",
+    "priority": "high",
+    "due_at": "2026-10-22T10:00:00Z",
+    "created_at": "2026-10-19T02:15:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "6afd80d0-83f7-5dd8-bbfe-0341c9d27583"
+    ],
+    "history": [
+      {
+        "actor_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-19T07:15:00Z"
+      }
+    ]
+  },
+  {
+    "id": "3372fbff-5455-5a5f-8f7a-a5b75b211a8a",
+    "title": "Fix the failing nightly export job",
+    "description_md": "",
+    "assignee_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+    "created_by": "bf80775d-5499-5da7-8fb2-af001799f954",
+    "created_by_ai": false,
+    "source_conversation_id": "5697410f-4c49-52e1-9ffd-055f667e7dad",
+    "project": "infra",
+    "status": "done",
+    "priority": "high",
+    "due_at": "2026-10-22T10:00:00Z",
+    "created_at": "2026-10-22T01:07:00Z",
+    "completed_at": "2026-10-22T03:40:00Z",
+    "source_message_ids": [
+      "94742af6-141c-5888-8ee0-8e36cca591aa"
+    ],
+    "history": [
+      {
+        "actor_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "field": "status",
+        "old_value": "open",
+        "new_value": "in_progress",
+        "changed_at": "2026-10-22T01:17:00Z"
+      },
+      {
+        "actor_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "field": "status",
+        "old_value": "in_progress",
+        "new_value": "done",
+        "changed_at": "2026-10-22T03:40:00Z"
+      }
+    ]
+  },
+  {
+    "id": "79587184-6d24-5341-849b-7aac23105d3c",
+    "title": "Finalise newsletter copy",
+    "description_md": "",
+    "assignee_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+    "created_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "created_by_ai": false,
+    "source_conversation_id": "dff9e34f-0372-5e88-ade7-736cb95bf761",
+    "project": "newsletter",
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-21T10:00:00Z",
+    "created_at": "2026-10-19T01:35:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "fbc86fb2-5186-5dfe-965b-f42c627c6b3d"
+    ],
+    "history": []
+  },
+  {
+    "id": "7374031c-ffac-568f-8c8a-21274d38eb6d",
+    "title": "Book the venue for the November meetup",
+    "description_md": "",
+    "assignee_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+    "created_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "created_by_ai": false,
+    "source_conversation_id": "dff9e34f-0372-5e88-ade7-736cb95bf761",
+    "project": "meetup",
+    "status": "open",
+    "priority": "normal",
+    "due_at": null,
+    "created_at": "2026-10-19T01:35:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "fbc86fb2-5186-5dfe-965b-f42c627c6b3d"
+    ],
+    "history": []
+  },
+  {
+    "id": "02337e5f-6b54-5671-a737-96e43031c96f",
+    "title": "Write the 2.4 migration notes",
+    "description_md": "",
+    "assignee_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_by_ai": true,
+    "source_conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "project": "release-2.4",
+    "status": "open",
+    "priority": "normal",
+    "due_at": "2026-10-23T10:00:00Z",
+    "created_at": "2026-10-20T02:55:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "68e070bb-08ce-5540-b244-a219a75e50f1"
+    ],
+    "history": []
+  },
+  {
+    "id": "c18a1afc-d877-533b-8624-c3f2655f0015",
+    "title": "Update the deploy script README",
+    "description_md": "",
+    "assignee_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+    "created_by": "17923f1b-19d3-5948-b091-ebd7a856c529",
+    "created_by_ai": false,
+    "source_conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "project": "infra",
+    "status": "open",
+    "priority": "low",
+    "due_at": null,
+    "created_at": "2026-10-21T03:45:00Z",
+    "completed_at": null,
+    "source_message_ids": [
+      "3a93b507-503f-5638-8ebf-9ec87ea495c1"
+    ],
+    "history": []
+  }
+]

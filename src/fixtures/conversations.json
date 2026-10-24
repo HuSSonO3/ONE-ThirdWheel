@@ -1,0 +1,1437 @@
+[
+  {
+    "id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "kind": "department",
+    "name": "engineering",
+    "description": "Engineering department",
+    "is_public": false,
+    "department_id": "c6ed4dc8-8bdb-5184-a77f-4349e1a1d1af",
+    "ai_enabled": true,
+    "created_by": null,
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a8ce3642-196f-53ef-9ecc-f722b2174f4b",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "8f73c571-7485-5bbe-9923-e98b30b87749",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2e7ee8d2-6830-5430-b768-2ffd37aa6de6",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "27466f31-ccda-56bf-b2e1-10de4db87b81",
+    "kind": "department",
+    "name": "design",
+    "description": "Design department",
+    "is_public": false,
+    "department_id": "cffb61d0-2e59-5985-9964-a04184272b2e",
+    "ai_enabled": true,
+    "created_by": null,
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "0a59a542-6a65-50b6-9103-b2b35700afb5",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "dff9e34f-0372-5e88-ade7-736cb95bf761",
+    "kind": "department",
+    "name": "marketing",
+    "description": "Marketing department",
+    "is_public": false,
+    "department_id": "b6b8ce07-7da1-58bb-a0dc-4c869d28913c",
+    "ai_enabled": true,
+    "created_by": null,
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "88c3948e-3435-538e-bba8-59d0d965df0f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "9043397e-40ba-5bad-b517-1d63d8df4532",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f48ef197-ceb9-5939-9122-ae203c9bd1d3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "1ef8c078-48e7-551c-a568-e96e11bf7351",
+    "kind": "department",
+    "name": "operations",
+    "description": "Operations department",
+    "is_public": false,
+    "department_id": "eccd99b3-55db-5efa-a4ee-434bdeab7ba9",
+    "ai_enabled": true,
+    "created_by": null,
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "83598166-fdbe-558d-a599-0f8af168f848",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "bd9ccdd8-9e70-5776-bf58-17a1f8814535",
+    "kind": "department",
+    "name": "finance",
+    "description": "Finance department",
+    "is_public": false,
+    "department_id": "ad5c2aa1-596c-5cea-8b2b-d23b0ec789eb",
+    "ai_enabled": true,
+    "created_by": null,
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "e2031620-5441-5fd9-8417-531eeda70208",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "9b1753ed-2daf-5dfc-bd44-7e0db2aa5f2a",
+    "kind": "channel",
+    "name": "general",
+    "description": "Company-wide announcements",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "88c3948e-3435-538e-bba8-59d0d965df0f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e2031620-5441-5fd9-8417-531eeda70208",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a8ce3642-196f-53ef-9ecc-f722b2174f4b",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "8f73c571-7485-5bbe-9923-e98b30b87749",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2e7ee8d2-6830-5430-b768-2ffd37aa6de6",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "0a59a542-6a65-50b6-9103-b2b35700afb5",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "9043397e-40ba-5bad-b517-1d63d8df4532",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f48ef197-ceb9-5939-9122-ae203c9bd1d3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "83598166-fdbe-558d-a599-0f8af168f848",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "072c01cf-f80a-5fe8-ae89-1364d379db60",
+    "kind": "channel",
+    "name": "random",
+    "description": "Water cooler",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "d79e514a-4668-5259-9c6a-585ad147e529",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "83598166-fdbe-558d-a599-0f8af168f848",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "8f73c571-7485-5bbe-9923-e98b30b87749",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2e7ee8d2-6830-5430-b768-2ffd37aa6de6",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f48ef197-ceb9-5939-9122-ae203c9bd1d3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "kind": "channel",
+    "name": "website",
+    "description": "Marketing site and landing pages",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "9043397e-40ba-5bad-b517-1d63d8df4532",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": "2026-10-20T09:30:00Z",
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "02df59e8-4dcc-56be-b269-d9c6f7032df4",
+    "kind": "channel",
+    "name": "payments-launch",
+    "description": "Stripe launch, go-live Nov 2",
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "e2031620-5441-5fd9-8417-531eeda70208",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e2031620-5441-5fd9-8417-531eeda70208",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "0373b2a0-698c-55db-94a4-d4740065da13",
+    "kind": "channel",
+    "name": "brand-refresh",
+    "description": "Q4 brand refresh",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "88c3948e-3435-538e-bba8-59d0d965df0f",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "0a59a542-6a65-50b6-9103-b2b35700afb5",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "88c3948e-3435-538e-bba8-59d0d965df0f",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "5697410f-4c49-52e1-9ffd-055f667e7dad",
+    "kind": "channel",
+    "name": "incidents",
+    "description": "Production incidents and follow-ups",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "8f73c571-7485-5bbe-9923-e98b30b87749",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "2e7ee8d2-6830-5430-b768-2ffd37aa6de6",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "64b47326-24b0-5aea-a42b-d240277bcd2d",
+    "kind": "channel",
+    "name": "hiring",
+    "description": "Hiring pipeline (leads only)",
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": false,
+    "created_by": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "88c3948e-3435-538e-bba8-59d0d965df0f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "e2031620-5441-5fd9-8417-531eeda70208",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "65989fac-8266-5bb7-8c89-297bc1f0e8b5",
+    "kind": "channel",
+    "name": "office-ops",
+    "description": "Office, facilities and equipment",
+    "is_public": true,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+        "role": "owner",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "83598166-fdbe-558d-a599-0f8af168f848",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "f658358c-b8e3-59e1-8d81-9ac76ff0e268",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      },
+      {
+        "user_id": "17923f1b-19d3-5948-b091-ebd7a856c529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "4d86c7f6-c8bc-5546-904e-f3d0b0eeb255",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      },
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      }
+    ]
+  },
+  {
+    "id": "551db725-2645-5c28-be18-b896f207b0df",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "2aaa1ba2-b9e1-5791-ae83-2dcc889f0a02",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      },
+      {
+        "user_id": "88c3948e-3435-538e-bba8-59d0d965df0f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      }
+    ]
+  },
+  {
+    "id": "c442ff70-b8da-586f-8504-84e84b5a5d2a",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a46c517c-e1d8-5094-8761-f8bbd6810340",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "124acb84-5a5b-58a6-ad40-afb9af100d76",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "c9d12bdc-56b2-5211-9f0d-29694d447654",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "c83cd1e3-6c79-5c4d-8277-86ddad732547",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "e2031620-5441-5fd9-8417-531eeda70208",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "e2031620-5441-5fd9-8417-531eeda70208",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      },
+      {
+        "user_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      }
+    ]
+  },
+  {
+    "id": "459a2804-bbbe-5224-8f4c-10d494d7d9b3",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "d79e514a-4668-5259-9c6a-585ad147e529",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "d79e514a-4668-5259-9c6a-585ad147e529",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf3dae00-df69-5afd-9a59-37ae704f96bd",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "238bade9-5cc1-5cce-ba6a-079ed4af77ae",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "4dd7f2fc-8538-5488-8719-0a291382d61d",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "83598166-fdbe-558d-a599-0f8af168f848",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "a76610df-2750-5177-8da9-44de87f71ad7",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "59457597-c0d3-5771-8cd1-b78ffab466f4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "fa0c5901-4416-51f1-86da-c4e4b107ac5f",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "e7aacca0-cb19-528d-bd57-f786e5426fd3",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "bf80775d-5499-5da7-8fb2-af001799f954",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "1f329357-f719-5152-b1d5-4adf00c7f099",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "95929db8-5891-5e09-80dc-86973d11ca5f",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "95929db8-5891-5e09-80dc-86973d11ca5f",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": true
+      },
+      {
+        "user_id": "b568fb93-382a-53a9-a3dc-42cd80bb0f6e",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "f8fc15d6-4394-527c-84b0-70103b78a4ec",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "7fc29794-71a3-55f0-bb4b-52908a845af2",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "8f73c571-7485-5bbe-9923-e98b30b87749",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "866f1ac7-950a-53fa-b164-30439da41333",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "9043397e-40ba-5bad-b517-1d63d8df4532",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "9043397e-40ba-5bad-b517-1d63d8df4532",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "4ec27bbc-ffc8-5fe1-957a-fb29a5a956b4",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "78ac1b1e-841a-567c-a9d4-3c0383b3521d",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "afa88b74-efc1-58a1-9c67-133bb6072568",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "afa88b74-efc1-58a1-9c67-133bb6072568",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "60c07938-90fe-5d6b-b169-b2c2ade69158",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  },
+  {
+    "id": "4baac51e-7492-5eff-b3fc-94213355cc09",
+    "kind": "dm",
+    "name": null,
+    "description": null,
+    "is_public": false,
+    "department_id": null,
+    "ai_enabled": true,
+    "created_by": "b4e6592c-768d-5c26-bb37-6327483bab32",
+    "created_at": "2026-10-01T01:00:00Z",
+    "members": [
+      {
+        "user_id": "b4e6592c-768d-5c26-bb37-6327483bab32",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      },
+      {
+        "user_id": "a58f6c9f-ba2c-522d-8dfd-fa1381a38613",
+        "role": "member",
+        "joined_at": "2026-10-01T01:00:00Z",
+        "left_at": null,
+        "ai_opt_in": false
+      }
+    ]
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1ac0d474-248b-565f-8ec5-77dc4711b548",
+    "uploader_id": "f30b95d9-a7c1-501e-a0b3-c00a05fd2044",
+    "conversation_id": "02df59e8-4dcc-56be-b269-d9c6f7032df4",
+    "message_id": "6272ab9c-f904-53df-94f1-ff8e070d628a",
+    "kind": "file",
+    "name": "september_payouts.csv",
+    "mime": "text/csv",
+    "language": null,
+    "storage_key": "fixtures/1ac0d474-248b-565f-8ec5-77dc4711b548/september_payouts.csv",
+    "created_at": "2026-10-21T06:59:30Z",
+    "content": "payout_id,date,amount,currency,status\npo_1001,2026-09-03,12850.00,USD,paid\npo_1002,2026-09-10,9734.20,USD,paid\npo_1003,2026-09-17,15002.75,USD,paid\npo_1004,2026-09-24,11120.40,USD,in_transit\n"
+  },
+  {
+    "id": "1f17e35c-cd50-5051-ad01-56053a46ab0a",
+    "uploader_id": "7d196ad4-efc6-549b-a1cc-bad2309869e4",
+    "conversation_id": "b15e4d80-fe29-5c82-b641-1ad0e36eecfe",
+    "message_id": "22320ddf-f974-5bba-83ad-357023b08a43",
+    "kind": "snippet",
+    "name": "rate_limiter.py",
+    "mime": "text/x-python",
+    "language": "python",
+    "storage_key": "fixtures/1f17e35c-cd50-5051-ad01-56053a46ab0a/rate_limiter.py",
+    "created_at": "2026-10-16T06:59:30Z",
+    "content": "import time\n\n\nclass TokenBucket:\n    def __init__(self, rate: float, capacity: int):\n        self.rate, self.capacity = rate, capacity\n        self.tokens = capacity\n        self.updated = time.monotonic()\n\n    def allow(self) -> bool:\n        now = time.monotonic()\n        self.tokens = min(self.capacity, self.tokens + (now - self.updated) * self.rate)\n        self.updated = now\n        if self.tokens >= 1:\n            self.tokens -= 1\n            return True\n        return False\n"
+  },
+  {
+    "id": "3d43f8be-23d1-5724-80d4-08e112be9183",
+    "uploader_id": "574b7268-ed38-5eea-bde4-bbd9d8f5a94f",
+    "conversation_id": "fa5ecf3f-e509-577e-8d6d-f6a7c29b4efb",
+    "message_id": "a41b9d96-12a8-574c-ba17-5b09019dc449",
+    "kind": "image",
+    "name": "hero-v2.png",
+    "mime": "image/png",
+    "language": null,
+    "storage_key": "fixtures/3d43f8be-23d1-5724-80d4-08e112be9183/hero-v2.png",
+    "created_at": "2026-10-19T03:59:30Z",
+    "content_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+  }
+]

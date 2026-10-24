@@ -1,0 +1,15 @@
+/temp.md
+
+# Frontend
+node_modules/
+src/web/dist/
+*.local
+
+# Backend
+.venv/
+__pycache__/
+*.py[cod]
+
+# Secrets
+.env
+.data/
