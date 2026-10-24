@@ -1,0 +1,27 @@
+openapi: 3.1.0
+info:
+  title: Company Chat API
+  version: 0.0.1
+# Phase 0 Day 2: add every endpoint from the feature spec (plan.md §3).
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                required: [status]
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+      required: [code, message]
