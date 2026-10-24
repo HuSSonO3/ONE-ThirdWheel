@@ -50,7 +50,7 @@ export default function TopBar({ me, crumb, notifications, onSearch, onMenu, onO
     <Wrapper className={embedded ? 'topbar topbar--embedded' : 'topbar'}>
       {!embedded && <>
         <button className="icon-btn topbar__menu" aria-label="Open navigation" onClick={onMenu}><Menu size={20} /></button>
-        <nav className="crumbs" aria-label="Breadcrumb"><span>Northstar</span><span className="crumbs__sep">›</span><strong>{crumb}</strong></nav>
+        <nav className="crumbs" aria-label="Breadcrumb"><span>TeamSync</span><span className="crumbs__sep">›</span><strong>{crumb}</strong></nav>
       </>}
 
       <div className="search-slot">

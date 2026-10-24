@@ -22,7 +22,7 @@ export default function Login({ onLogin }: { onLogin: (u: components['schemas'][
     <div className="shell shell--center">
       <form className="login" onSubmit={submit}>
         <span className="brand__mark"><MessageCircle size={22} /></span>
-        <h1>Sign in to Northstar</h1>
+        <h1>Sign in to TeamSync</h1>
         <p className="muted">Use your company email and password.</p>
         <label>Email<input type="email" autoComplete="username" autoFocus required value={email} onChange={e => setEmail(e.target.value)} /></label>
         <label>Password<input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></label>

@@ -69,7 +69,7 @@ export default function Sidebar(p: Props) {
       {p.open && <button className="scrim" aria-label="Close navigation" onClick={p.onClose} />}
       <aside className={`sidebar${p.open ? ' is-open' : ''}${showList ? '' : ' is-rail-only'}`} aria-label="Workspace navigation">
         <nav className="rail" aria-label="Primary">
-          <span className="brand__mark" title="Northstar"><MessageCircle size={20} /></span>
+          <span className="brand__mark" title="TeamSync"><MessageCircle size={20} /></span>
           {tab('channels', 'Channels', <Hash size={21} />, unreadIn([...dept, ...channels]))}
           {tab('dms', 'DMs', <MessagesSquare size={21} />, unreadIn(dms))}
           <button className={`rail__tab${p.view === 'tasks' ? ' is-active' : ''}`} aria-current={p.view === 'tasks' ? 'page' : undefined} onClick={() => p.onView('tasks')}>
