@@ -1,12 +1,11 @@
-import os
-
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from api.config import DATABASE_URL
 from api.models import Base
 
 config = context.config
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 
 def run_migrations_online() -> None:

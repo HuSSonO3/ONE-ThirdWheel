@@ -24,8 +24,15 @@ services:
   api:
     build: ./src
     command: sh -c "alembic upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+    # Secrets (RUNPOD_API_KEY, RUNPOD_ENDPOINT_ID, AI_MODEL) come from the gitignored root .env.
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://chat:chat@postgres:5432/chat
+      AI_WORKER_ENABLED: ${AI_WORKER_ENABLED:-true}
+      # 'required' forces the small Qwen3-8B into wrong tools; 'auto' lets it reason first (tested live).
+      AI_TOOL_CHOICE: ${AI_TOOL_CHOICE:-auto}
     ports: ["8000:8000"]
     volumes: [./src:/app]
     depends_on:

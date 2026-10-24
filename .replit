@@ -1,0 +1,11 @@
+modules = ["python-3.12", "nodejs-20", "postgresql-16"]
+run = "bash scripts/replit_build.sh && bash scripts/replit_start.sh"
+
+[deployment]
+deploymentTarget = "vm"
+build = ["bash", "scripts/replit_build.sh"]
+run = ["bash", "scripts/replit_start.sh"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
