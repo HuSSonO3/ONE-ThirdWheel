@@ -50,6 +50,46 @@ def test_transient_retries_but_not_auth_failure(monkeypatch):
 
 
 def test_missing_credentials_fail_explicitly(monkeypatch):
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+    clear_ai_env(monkeypatch)
+    with pytest.raises(ValueError, match="RUNPOD_API_KEY"):
         NativeModel()
+
+
+def clear_ai_env(monkeypatch):
+    for key in ("AI_API_KEY", "RUNPOD_API_KEY", "OPENAI_API_KEY", "RUNPOD_ENDPOINT_ID", "AI_BASE_URL",
+                "AI_MODEL", "AI_TOOL_CHOICE", "AI_TIMEOUT_SECONDS"):
+        monkeypatch.delenv(key, raising=False)
+
+
+def test_runpod_configuration_from_env_file(tmp_path, monkeypatch):
+    clear_ai_env(monkeypatch)
+    env = tmp_path / ".env"
+    env.write_text("# comment\nRUNPOD_API_KEY='placeholder'\nRUNPOD_ENDPOINT_ID=abc123\nAI_MODEL=served-model\n")
+    monkeypatch.setenv("AI_MODEL", "already-set")
+    module.load_env(env)
+    native = NativeModel()
+    assert native.url == "https://api.runpod.ai/v2/abc123/openai/v1"
+    assert native.key == "placeholder" and native.model == "already-set"
+    assert native.timeout == 180
+
+
+def test_runpod_requires_served_model_name(monkeypatch):
+    clear_ai_env(monkeypatch)
+    monkeypatch.setenv("RUNPOD_API_KEY", "placeholder")
+    monkeypatch.setenv("RUNPOD_ENDPOINT_ID", "abc123")
+    with pytest.raises(ValueError, match="AI_MODEL"):
+        NativeModel()
+
+
+def test_auto_tool_choice_maps_plain_reply_to_no_action(monkeypatch):
+    clear_ai_env(monkeypatch)
+    sent = []
+
+    def respond(request, timeout):
+        sent.append(json.loads(request.data))
+        return io.BytesIO(json.dumps({"choices": [{"message": {"content": "nothing to do"}}]}).encode())
+
+    monkeypatch.setattr(module, "urlopen", respond)
+    calls = NativeModel(api_key="placeholder", base_url="https://example.test/v1", model="m",
+                        tool_choice="auto").choose("chat", [])
+    assert calls[0].name == "no_action" and sent[0]["tool_choice"] == "auto"

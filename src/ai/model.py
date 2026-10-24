@@ -82,46 +82,81 @@ class RecordedResponses:
         return calls or [Call("no_action", {"reason": "No recorded action for this event."})]
 
 
+def load_env(*paths: Path) -> None:
+    """Load KEY=VALUE lines from untracked .env files; real environment variables win."""
+    root = Path(__file__).resolve().parents[2]
+    for path in paths or (root / ".env", root / "src" / ".env"):
+        if not path.is_file():
+            continue
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.removeprefix("export ").split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+
+
 class NativeModel:
+    """OpenAI-compatible chat completions: RunPod serverless vLLM, or any compatible host.
+
+    RunPod: RUNPOD_API_KEY + RUNPOD_ENDPOINT_ID + AI_MODEL (the model the endpoint serves).
+    Generic: AI_API_KEY (or OPENAI_API_KEY) + AI_BASE_URL + AI_MODEL.
+    """
+
     def __init__(self, *, model: str | None = None, api_key: str | None = None,
-                 base_url: str | None = None, attempts: int = 3):
-        self.model = model or os.environ.get("AI_MODEL", "gpt-4.1-mini")
-        self.key = api_key or os.environ.get("OPENAI_API_KEY")
-        self.url = (base_url or os.environ.get("AI_BASE_URL", "https://api.openai.com/v1")).rstrip("/")
+                 base_url: str | None = None, attempts: int = 3, timeout: float | None = None,
+                 tool_choice: str | None = None):
+        env = os.environ.get
+        endpoint = env("RUNPOD_ENDPOINT_ID")
+        runpod_url = f"https://api.runpod.ai/v2/{endpoint}/openai/v1" if endpoint else None
+        self.url = (base_url or env("AI_BASE_URL") or runpod_url or "https://api.openai.com/v1").rstrip("/")
+        self.key = api_key or env("AI_API_KEY") or env("RUNPOD_API_KEY") or env("OPENAI_API_KEY")
+        default_model = "gpt-4.1-mini" if self.url == "https://api.openai.com/v1" else None
+        self.model = model or env("AI_MODEL") or default_model
         if not self.key:
-            raise ValueError("Configure OPENAI_API_KEY through your environment secrets.")
+            raise ValueError("Set RUNPOD_API_KEY (or AI_API_KEY) in an untracked .env or environment secrets.")
+        if not self.model:
+            raise ValueError("Set AI_MODEL to the model name served by your endpoint.")
         if not self.url.startswith("https://"):
             raise ValueError("AI_BASE_URL must use HTTPS.")
         self.attempts = max(1, attempts)
+        # Serverless cold starts can take well over a minute.
+        self.timeout = timeout or float(env("AI_TIMEOUT_SECONDS", "180"))
+        self.tool_choice = tool_choice or env("AI_TOOL_CHOICE", "required")
+        if self.tool_choice not in ("required", "auto"):
+            raise ValueError("AI_TOOL_CHOICE must be 'required' or 'auto'.")
 
     def choose(self, context: str, tools: list[dict]) -> list[Call]:
         body = json.dumps({
             "model": self.model, "messages": [{"role": "system", "content": SYSTEM},
                                            {"role": "user", "content": context}],
-            "tools": tools, "tool_choice": "required",
+            "tools": tools, "tool_choice": self.tool_choice, "temperature": 0,
         }).encode()
         for attempt in range(self.attempts):
             try:
                 request = Request(self.url + "/chat/completions", data=body, headers={
                     "Authorization": f"Bearer {self.key}", "Content-Type": "application/json",
                 })
-                with urlopen(request, timeout=45) as response:
+                with urlopen(request, timeout=self.timeout) as response:
                     data = json.load(response)
-                calls = data["choices"][0]["message"].get("tool_calls", [])
+                calls = data["choices"][0]["message"].get("tool_calls") or []
+                if not calls and self.tool_choice == "auto":
+                    return [Call("no_action", {"reason": "Model returned no tool call."})]
                 if not calls or len(calls) > 16:
                     raise ValueError("invalid_tool_call_count")
                 results = []
                 for call in calls:
                     fn = call["function"]
+                    raw = fn.get("arguments")
                     try:
-                        arguments = json.loads(fn["arguments"])
+                        arguments = raw if isinstance(raw, dict) else json.loads(raw)
                     except (ValueError, TypeError):
                         arguments = None  # Dispatcher audits malformed arguments.
                     results.append(Call(fn["name"], arguments))
                 return results
             except HTTPError as exc:
                 # Never persist response bodies, headers, prompts, or credentials in errors.
-                if exc.code != 429 and exc.code < 500:
+                if exc.code not in (408, 429) and exc.code < 500:
                     raise RuntimeError(f"model_http_{exc.code}") from None
             except (URLError, TimeoutError):
                 pass

@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 
 from ai.context import Context, batch_messages
-from ai.model import Model, NativeModel, RecordedResponses
+from ai.model import Model, NativeModel, RecordedResponses, load_env
 from ai.scoring import Scores
 from ai.storage import RecordingBackend
 from ai.tools.base import DEFAULT_SCOPES, ToolContext
@@ -175,6 +175,7 @@ def markdown(report: dict, mode: str) -> str:
 
 
 def main() -> None:
+    load_env()
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--live", action="store_true")

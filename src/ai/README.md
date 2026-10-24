@@ -26,11 +26,20 @@ hosting its polling loop.
 
 ## Run
 
-From `src/`, run `uv sync`. Configure `DATABASE_URL` and `OPENAI_API_KEY` in your
-environment's secrets manager; never commit or paste credentials into a command.
-Optional settings: `AI_MODEL` (default `gpt-4.1-mini`) and `AI_BASE_URL` (default
-OpenAI's HTTPS `/v1` URL). The provider must support native chat-completion tool
-calls. This code does not provision a model account or call a model during tests.
+From `src/`, run `uv sync`. The worker and `ai.eval` load an untracked `.env` at the
+repo root (or `src/.env`); real environment variables take precedence. Copy
+`.env.example` and fill in:
+
+- `RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_ID`: RunPod serverless vLLM endpoint; the client
+  calls `https://api.runpod.ai/v2/<id>/openai/v1/chat/completions`.
+- `AI_MODEL`: required; the model name the endpoint serves.
+- Optional: `AI_TIMEOUT_SECONDS` (default 180, for cold starts), `AI_TOOL_CHOICE`
+  (`required` default, `auto` for older vLLM), `AI_BASE_URL` + `AI_API_KEY` for any
+  other OpenAI-compatible HTTPS host.
+
+`.env` is gitignored; never commit keys. The RunPod vLLM worker must have native tool
+calling enabled (`ENABLE_AUTO_TOOL_CHOICE=true` and a `TOOL_CALL_PARSER` matching the
+model, e.g. `hermes` for Qwen). Tests never call the model.
 
 ```sh
 uv run python -m ai.worker --once --debounce 0
@@ -111,7 +120,7 @@ This remains a synthetic fixture evaluation, not a calibrated production benchma
   HTTP → human acceptance. It requires `AI_DOCKER_TEST_API_URL` and `DATABASE_URL`
   for the **same disposable test deployment**; it creates and accepts a test task.
   It is skipped in ordinary runs and never changes API code or startup.
-- Live-model extraction quality still requires a configured `OPENAI_API_KEY`.
+- Live-model extraction quality still requires the RunPod settings above in `.env`.
   Recorded test results are never presented as native-model accuracy.
 
 ## Deliberate limits

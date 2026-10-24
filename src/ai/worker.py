@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from ai.context import Context
 from ai.dispatcher import dispatch
-from ai.model import Model, NativeModel, RecordedResponses
+from ai.model import Model, NativeModel, RecordedResponses, load_env
 from ai.storage import assemble
 from ai.tools.base import ToolContext
 from ai.tools.registry import registry
@@ -123,6 +123,7 @@ def run_once(db: Session, model: Model, *, debounce_seconds: float = 45, batch_s
 
 
 def main() -> None:
+    load_env()
     from api.db import session_factory
 
     parser = argparse.ArgumentParser(description=__doc__)
