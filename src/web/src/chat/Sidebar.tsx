@@ -1,9 +1,11 @@
-import { CheckCheck, ChevronDown, Hash, Lock, MessageCircle, Plus, Search, SlidersHorizontal, Users, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CheckCheck, Hash, Lock, MessageCircle, MessagesSquare, Plus, Search, SlidersHorizontal, Users, X } from 'lucide-react'
 import type { Conversation, User } from './types'
-import { conversationTitle, dmPartner, users } from './data'
+import { conversationTitle, dmPartner } from './data'
 import { Avatar } from './ui'
 
 export type View = 'chat' | 'tasks' | 'admin'
+type ListTab = 'channels' | 'dms'
 
 interface Props {
   me: User
@@ -16,7 +18,6 @@ interface Props {
   onClose: () => void
   onSelect: (id: string) => void
   onView: (v: View) => void
-  onPersona: (id: string) => void
   onBrowse: () => void
   onNewChannel: () => void
   onNewMessage: () => void
@@ -28,7 +29,15 @@ export default function Sidebar(p: Props) {
   const channels = mine.filter(c => c.kind === 'channel')
   const dms = mine.filter(c => c.kind === 'dm')
   const key = (id: string) => `${p.me.id}:${id}`
+  const unreadIn = (list: Conversation[]) => list.reduce((n, c) => n + (p.unread[key(c.id)] ?? 0), 0)
+
+  const activeKind = p.conversations.find(c => c.id === p.activeId)?.kind
+  const [listTab, setListTab] = useState<ListTab>(activeKind === 'dm' ? 'dms' : 'channels')
+  // Follow the conversation when it is opened from search, a notification or a new DM.
+  useEffect(() => { setListTab(activeKind === 'dm' ? 'dms' : 'channels') }, [p.activeId, activeKind])
+
   const active = (id: string) => p.view === 'chat' && p.activeId === id
+  const showList = p.view === 'chat'
 
   const row = (c: Conversation) => {
     const n = p.unread[key(c.id)] ?? 0
@@ -47,66 +56,65 @@ export default function Sidebar(p: Props) {
     )
   }
 
+  const tab = (id: ListTab, label: string, icon: React.ReactNode, badge: number) => {
+    const on = p.view === 'chat' && listTab === id
+    return (
+      <button className={`rail__tab${on ? ' is-active' : ''}`} aria-current={on ? 'page' : undefined}
+        onClick={() => { setListTab(id); p.onView('chat') }}>
+        <span className="rail__icon">{icon}{badge > 0 && <i className="rail__badge">{badge}</i>}</span>{label}
+      </button>
+    )
+  }
+
   return (
     <>
       {p.open && <button className="scrim" aria-label="Close navigation" onClick={p.onClose} />}
-      <aside className={`sidebar${p.open ? ' is-open' : ''}`} aria-label="Workspace navigation">
-        <div className="brand">
-          <span className="brand__mark"><MessageCircle size={20} /></span>
-          <div>
-            <div className="brand__name">Northstar</div>
-            <div className="brand__sub">Company workspace</div>
-          </div>
-          <button className="icon-btn brand__close" aria-label="Close navigation" onClick={p.onClose}><X size={18} /></button>
-        </div>
-
-        <div className="sidebar__scroll">
-          <button className="ws-switch" aria-label="Workspace: Northstar (demo)" title="Single demo workspace">
-            <span className="ws-switch__n">N</span>
-            <span><strong>Northstar</strong><small>Demo workspace</small></span>
-            <ChevronDown size={16} />
+      <aside className={`sidebar${p.open ? ' is-open' : ''}${showList ? '' : ' is-rail-only'}`} aria-label="Workspace navigation">
+        <nav className="rail" aria-label="Primary">
+          <span className="brand__mark" title="Northstar"><MessageCircle size={20} /></span>
+          {tab('channels', 'Channels', <Hash size={21} />, unreadIn([...dept, ...channels]))}
+          {tab('dms', 'DMs', <MessagesSquare size={21} />, unreadIn(dms))}
+          <button className={`rail__tab${p.view === 'tasks' ? ' is-active' : ''}`} aria-current={p.view === 'tasks' ? 'page' : undefined} onClick={() => p.onView('tasks')}>
+            <span className="rail__icon"><CheckCheck size={21} />{p.myTaskCount > 0 && <i className="rail__badge">{p.myTaskCount}</i>}</span>My tasks
           </button>
-
-          <nav className="nav" aria-label="Primary">
-            <button className={`nav-row nav-row--primary${p.view === 'chat' ? ' is-active' : ''}`} onClick={() => p.onView('chat')} aria-current={p.view === 'chat' ? 'page' : undefined}>
-              <span className="nav-row__icon"><MessageCircle size={18} /></span><span className="nav-row__label">Chat</span>
-            </button>
-            <button className={`nav-row nav-row--primary${p.view === 'tasks' ? ' is-active' : ''}`} onClick={() => p.onView('tasks')} aria-current={p.view === 'tasks' ? 'page' : undefined}>
-              <span className="nav-row__icon"><CheckCheck size={18} /></span><span className="nav-row__label">My tasks</span>
-              <span className="count count--soft">{p.myTaskCount}</span>
-            </button>
-          </nav>
-
-          <div className="nav-section"><span>Departments</span></div>
-          {dept.map(row)}
-
-          <div className="nav-section"><span>Channels</span><button className="icon-btn" aria-label="Create channel" onClick={p.onNewChannel}><Plus size={15} /></button></div>
-          {channels.map(row)}
-          <button className="nav-row" onClick={p.onBrowse}><span className="nav-row__icon"><Search size={17} /></span><span className="nav-row__label">Browse channels</span></button>
-
-          <div className="nav-section"><span>Direct messages</span><button className="icon-btn" aria-label="New message" onClick={p.onNewMessage}><Plus size={15} /></button></div>
-          {dms.map(row)}
-          <button className="nav-row" onClick={p.onNewMessage}><span className="nav-row__icon"><Plus size={17} /></span><span className="nav-row__label">New message</span></button>
-        </div>
-
-        <div className="sidebar__foot">
-          <div className="me">
-            <Avatar user={p.me} size={40} />
-            <div><strong>{p.me.name}</strong><small>{p.me.title}</small></div>
-            <ChevronDown size={16} />
-          </div>
-          <div className="persona">
-            <label htmlFor="persona">Demo persona</label>
-            <select id="persona" value={p.me.id} onChange={e => p.onPersona(e.target.value)}>
-              {users.map(u => <option key={u.id} value={u.id}>{u.name} · {u.role}</option>)}
-            </select>
-          </div>
+          <span className="rail__spacer" />
           {p.me.role === 'admin' && (
-            <button className={`nav-row${p.view === 'admin' ? ' is-active' : ''}`} onClick={() => p.onView('admin')}>
-              <span className="nav-row__icon"><SlidersHorizontal size={17} /></span><span className="nav-row__label">Admin &amp; people</span>
+            <button className={`rail__tab${p.view === 'admin' ? ' is-active' : ''}`} aria-current={p.view === 'admin' ? 'page' : undefined} onClick={() => p.onView('admin')}>
+              <span className="rail__icon"><SlidersHorizontal size={20} /></span>Admin
             </button>
           )}
-        </div>
+          <span className="rail__me" title={`${p.me.name} · ${p.me.title}`}><Avatar user={p.me} size={38} presence /></span>
+        </nav>
+
+        {showList && (
+          <div className="panel">
+            <div className="panel__head">
+              <h2>{listTab === 'channels' ? 'Channels' : 'Direct messages'}</h2>
+              <button className="icon-btn" aria-label={listTab === 'channels' ? 'Create channel' : 'New message'} onClick={listTab === 'channels' ? p.onNewChannel : p.onNewMessage}><Plus size={17} /></button>
+              <button className="icon-btn brand__close" aria-label="Close navigation" onClick={p.onClose}><X size={18} /></button>
+            </div>
+            <div className="sidebar__scroll">
+              {listTab === 'channels' ? (
+                <>
+                  {dept.length > 0 && <div className="nav-section"><span>Departments</span></div>}
+                  {dept.map(row)}
+                  <div className="nav-section"><span>Channels</span></div>
+                  {channels.map(row)}
+                  <button className="nav-row" onClick={p.onBrowse}><span className="nav-row__icon"><Search size={17} /></span><span className="nav-row__label">Browse channels</span></button>
+                </>
+              ) : (
+                <>
+                  {dms.map(row)}
+                  <button className="nav-row" onClick={p.onNewMessage}><span className="nav-row__icon"><Plus size={17} /></span><span className="nav-row__label">New message</span></button>
+                </>
+              )}
+            </div>
+            <div className="panel__foot">
+              <Avatar user={p.me} size={34} />
+              <div><strong>{p.me.name}</strong><small>{p.me.title}</small></div>
+            </div>
+          </div>
+        )}
       </aside>
     </>
   )

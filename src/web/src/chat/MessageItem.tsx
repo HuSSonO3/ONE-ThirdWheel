@@ -43,9 +43,9 @@ export function FileCard({ name, size }: { name: string; size: string }) {
       <span className="file-card__icon"><FileText size={18} /></span>
       <div className="file-card__meta">
         <strong>{name}</strong>
-        <span>{size} · local preview only</span>
+        <span>{size}</span>
       </div>
-      <button className="icon-btn" aria-label={`Download ${name} (local preview only)`} title="Local preview only" disabled><Download size={17} /></button>
+      <button className="icon-btn" aria-label={`Download ${name}`} disabled><Download size={17} /></button>
     </div>
   )
 }
@@ -74,7 +74,6 @@ export default function MessageItem({ message, meId, replyCount, inThread, onRea
       <div className="msg__main">
         <div className="msg__meta">
           <span className="msg__author">{author?.name}</span>
-          <span className="msg__presence"><i className={`dot dot--${author?.presence ?? 'offline'}`} />demo available</span>
           <span className="msg__time">{message.time}</span>
           {message.edited && <span className="msg__time">(edited)</span>}
         </div>
@@ -92,7 +91,6 @@ export default function MessageItem({ message, meId, replyCount, inThread, onRea
         )}
 
         {message.files?.map(f => <FileCard key={f.id} name={f.name} size={f.size} />)}
-        {message.local && <span className="msg__local">Local only · not delivered</span>}
 
         {(Object.keys(message.reactions).length > 0 || (!inThread && replyCount > 0)) && (
           <div className="msg__reactions">

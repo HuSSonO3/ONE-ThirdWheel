@@ -11,13 +11,10 @@ interface Props {
   onSend: (body: string, files: FileAttachment[]) => void
   members: User[]
   placeholder: string
-  typingName?: string
-  onToggleTyping?: () => void
-  typingOn?: boolean
   compact?: boolean
 }
 
-export default function Composer({ value, onChange, onSend, members, placeholder, typingName, onToggleTyping, typingOn, compact }: Props) {
+export default function Composer({ value, onChange, onSend, members, placeholder, compact }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [lang, setLang] = useState('typescript')
@@ -145,14 +142,6 @@ export default function Composer({ value, onChange, onSend, members, placeholder
           </div>
         </div>
       </div>
-
-      {!compact && (
-        <div className="composer__legal">
-          <span>Local only · no upload or delivery</span>
-          {typingOn && typingName && <span className="typing" aria-live="polite">{typingName} is typing…</span>}
-          <button className="link-btn link-btn--muted" onClick={onToggleTyping}>{typingOn ? 'Hide typing demo' : 'Show typing demo'}</button>
-        </div>
-      )}
     </div>
   )
 }

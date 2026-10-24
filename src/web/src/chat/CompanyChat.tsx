@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ClipboardList, Hash, Lock, MessageSquare, MoreHorizontal, Sparkles, Users, X } from 'lucide-react'
+import { Check, ClipboardList, Hash, Lock, MessageSquare, Menu, MoreHorizontal, Sparkles, Users, X } from 'lucide-react'
 import './chat.css'
 import type { AppNotification, Conversation, FileAttachment, Message, Suggestion, Task, TaskStatus } from './types'
 import {
@@ -17,7 +17,7 @@ import { Avatar, Dialog } from './ui'
 type Modal = null | 'browse' | 'channel' | 'dm' | { modify: Suggestion } | { remove: string } | { archive: string }
 
 export default function CompanyChat() {
-  const [meId, setMeId] = useState('alice')
+  const meId = 'alice'
   const [view, setView] = useState<View>('chat')
   const [activeId, setActiveId] = useState('ch-website-refresh')
   const [tab, setTab] = useState<'messages' | 'tasks'>('messages')
@@ -32,9 +32,6 @@ export default function CompanyChat() {
   const [threadId, setThreadId] = useState<string | null>(null)
   const [modal, setModal] = useState<Modal>(null)
   const [navOpen, setNavOpen] = useState(false)
-  const [offline, setOffline] = useState(true)
-  const [typingOn, setTypingOn] = useState(false)
-  const [membersOpen, setMembersOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [jump, setJump] = useState<string | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -56,6 +53,7 @@ export default function CompanyChat() {
     : tasks.filter(t => t.sourceConversationId === conversation.id), [tasks, conversation])
   const myOpenTasks = tasks.filter(t => t.assigneeId === meId && (t.status === 'open' || t.status === 'in_progress')).length
   const convSuggestions = suggestions.filter(s => s.conversationId === conversation.id)
+  const isOwner = conversation.kind === 'dm' || conversation.ownerId === meId
   const tsOn = conversation.kind === 'dm' ? !!dmOptIn[`${meId}:${conversation.id}`] : !tsOff[conversation.id]
   const pendingCount = convSuggestions.filter(s => s.status === 'pending').length
   const approvedCount = convSuggestions.filter(s => s.status === 'accepted').length
@@ -79,6 +77,7 @@ export default function CompanyChat() {
   }, [conversation.id, topLevel.length, suggestions, tab, view, jump, tsOn])
 
   function toggleTeamSync() {
+    if (!isOwner) return
     if (conversation.kind === 'dm') setDmOptIn(o => ({ ...o, [`${meId}:${conversation.id}`]: !tsOn }))
     else setTsOff(o => ({ ...o, [conversation.id]: tsOn }))
   }
@@ -86,23 +85,11 @@ export default function CompanyChat() {
   const togglePanel = () => { setPanelOpen(o => !o); setThreadId(null) }
 
   function selectConversation(id: string) {
-    setView('chat'); setActiveId(id); setTab('messages'); setThreadId(null); setNavOpen(false); setMembersOpen(false); setMoreOpen(false)
+    setView('chat'); setActiveId(id); setTab('messages'); setThreadId(null); setNavOpen(false); setMoreOpen(false)
     setUnread(u => ({ ...u, [`${meId}:${id}`]: 0 }))
   }
-  function changePersona(id: string) {
-    setMeId(id)
-    const next = userById(id)!
-    if (view === 'admin' && next.role !== 'admin') setView('chat')
-    const c = visibleConvs.find(x => x.id === activeId)
-    if (!c || !(c.isPublic || c.memberIds.includes(id))) {
-      const first = visibleConvs.find(x => x.memberIds.includes(id) && x.kind === 'channel') ?? visibleConvs.find(x => x.memberIds.includes(id))
-      if (first) setActiveId(first.id)
-    }
-    setThreadId(null)
-  }
-
   function sendMessage(body: string, files: FileAttachment[], parentId?: string) {
-    const msg: Message = { id: crypto.randomUUID(), conversationId: conversation.id, authorId: meId, time: nowLabel(), body, reactions: {}, files: files.length ? files : undefined, parentId, local: true }
+    const msg: Message = { id: crypto.randomUUID(), conversationId: conversation.id, authorId: meId, time: nowLabel(), body, reactions: {}, files: files.length ? files : undefined, parentId, }
     setMessages(ms => [...ms, msg])
     const key = parentId ? `thread:${parentId}` : conversation.id
     setDrafts(d => ({ ...d, [key]: '' }))
@@ -157,82 +144,59 @@ export default function CompanyChat() {
       <div className="app">
         <Sidebar me={me} conversations={visibleConvs} activeId={conversation.id} view={view} unread={unread} myTaskCount={myOpenTasks}
           open={navOpen} onClose={() => setNavOpen(false)} onSelect={selectConversation} onView={v => { setView(v); setNavOpen(false) }}
-          onPersona={changePersona} onBrowse={() => setModal('browse')} onNewChannel={() => setModal('channel')} onNewMessage={() => setModal('dm')} />
+          onBrowse={() => setModal('browse')} onNewChannel={() => setModal('channel')} onNewMessage={() => setModal('dm')} />
 
         <main className="main" inert={navOpen}>
-          <TopBar me={me} crumb={stack} conversations={visibleConvs} messages={messages} notifications={notifications}
+          {view !== 'chat' && (
+            <TopBar me={me} crumb={stack} conversations={visibleConvs} messages={messages} notifications={notifications}
             onMenu={() => setNavOpen(true)}
             onOpenResult={(cid, mid) => { selectConversation(cid); setJump(mid) }}
             onOpenNotification={n => { selectConversation(n.conversationId); setNotifications(ns => ns.map(x => x.id === n.id ? { ...x, read: true } : x)) }}
             onMarkAllRead={() => setNotifications(ns => ns.map(n => ({ ...n, read: true })))} />
-
-          <div className="banner" role="status">
-            <span className="banner__dot" />
-            <strong>LOCAL DEMO · no server connected</strong>
-            <span className="banner__text">Messages, files, and approvals stay in this browser.</span>
-            <span className="banner__right">
-              <span>{offline ? 'Simulated offline' : 'Simulated online'}</span>
-              <button className="btn btn--small" onClick={() => setOffline(o => !o)}>{offline ? 'Reconnect' : 'Go offline'}</button>
-            </span>
-          </div>
+          )}
 
           {view === 'tasks' && <div className="scroll"><MyTasks me={me} tasks={tasks} onStatus={setStatus} /></div>}
           {view === 'admin' && <div className="scroll"><AdminView /></div>}
 
           {view === 'chat' && (
+            <div className="chatview">
+            <div className="chead">
+              <button className="icon-btn topbar__menu" aria-label="Open navigation" onClick={() => setNavOpen(true)}><Menu size={20} /></button>
+              <span className="chead__tile">
+                {conversation.kind === 'channel' && (conversation.isPublic ? <Hash size={22} /> : <Lock size={20} />)}
+                {conversation.kind === 'department' && <Users size={21} />}
+                {conversation.kind === 'dm' && <Avatar user={partner} size={40} presence />}
+              </span>
+              <div className="chead__copy">
+                <h1>{conversation.kind === 'channel' ? `# ${title}` : title}</h1>
+                <p>{conversation.kind === 'dm' ? `${partner?.title} · ${partner?.department}` : conversation.description}</p>
+              </div>
+              <div className="chead__right">
+                <button className={`ts-toggle${tsOn ? ' is-on' : ''}`} aria-pressed={tsOn} onClick={toggleTeamSync} disabled={!isOwner}
+                  title={!isOwner ? 'Only the channel owner can turn TeamSync on or off' : conversation.kind === 'dm' ? 'Allow TeamSync in this conversation' : 'Turn TeamSync on or off for this conversation'}>
+                  <Sparkles size={16} /><span className="ts-toggle__label">TeamSync {tsOn ? 'on' : 'off'}</span>
+                </button>
+                <button className={`icon-btn icon-btn--box icon-btn--lg icon-btn--count${panelOpen ? ' is-on' : ''}`} aria-label={`TeamSync overview, ${members.length} members and shared resources`} aria-pressed={panelOpen} onClick={togglePanel}>
+                  <ClipboardList size={19} /><span className="btn-count">{members.length}</span>{tsOn && pendingCount > 0 && <span className="icon-btn__dot" />}
+                </button>
+                <div className="members-wrap">
+                  <button className="icon-btn icon-btn--lg" aria-label="More options" aria-expanded={moreOpen} onClick={() => { setMoreOpen(o => !o) }}><MoreHorizontal size={20} /></button>
+                  {moreOpen && (
+                    <div className="popover popover--menu">
+                      <button disabled={conversation.kind !== 'channel' || !isOwner} onClick={() => { setMoreOpen(false); setModal({ archive: conversation.id }) }}>Archive channel</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+                <TopBar embedded me={me} crumb={stack} conversations={visibleConvs} messages={messages} notifications={notifications}
+                  onMenu={() => setNavOpen(true)}
+                  onOpenResult={(cid, mid) => { selectConversation(cid); setJump(mid) }}
+                  onOpenNotification={n => { selectConversation(n.conversationId); setNotifications(ns => ns.map(x => x.id === n.id ? { ...x, read: true } : x)) }}
+                  onMarkAllRead={() => setNotifications(ns => ns.map(n => ({ ...n, read: true })))} />
+            </div>
             <div className="chat">
               <div className="chat__col">
-                <div className="chead">
-                  <span className="chead__tile">
-                    {conversation.kind === 'channel' && (conversation.isPublic ? <Hash size={22} /> : <Lock size={20} />)}
-                    {conversation.kind === 'department' && <Users size={21} />}
-                    {conversation.kind === 'dm' && <Avatar user={partner} size={40} presence />}
-                  </span>
-                  <div className="chead__copy">
-                    <h1>{conversation.kind === 'channel' ? `# ${title}` : title}</h1>
-                    <p>{conversation.kind === 'dm' ? `${partner?.title} · ${partner?.department}` : conversation.description}</p>
-                  </div>
-                  <div className="chead__right">
-                    <button className={`ts-toggle${tsOn ? ' is-on' : ''}`} aria-pressed={tsOn} onClick={toggleTeamSync}
-                      title={conversation.kind === 'dm' ? 'Allow TeamSync in this conversation' : 'Turn TeamSync on or off for this conversation'}>
-                      <Sparkles size={16} /><span className="ts-toggle__label">TeamSync {tsOn ? 'on' : 'off'}</span>
-                    </button>
-                    <button className={`icon-btn icon-btn--box icon-btn--lg${panelOpen ? ' is-on' : ''}`} aria-label="TeamSync overview and shared resources" aria-pressed={panelOpen} onClick={togglePanel}>
-                      <ClipboardList size={19} />{tsOn && pendingCount > 0 && <span className="icon-btn__dot" />}
-                    </button>
-                    <div className="members-wrap">
-                      <button className="members" aria-expanded={membersOpen} onClick={() => { setMembersOpen(o => !o); setMoreOpen(false) }}>
-                        <Users size={17} /><span>{members.length}</span>
-                        <span className="members__stack">{members.slice(0, 3).map(u => <span key={u.id}>{u.initials}</span>)}</span>
-                      </button>
-                      {membersOpen && (
-                        <div className="popover popover--members">
-                          <div className="popover__head"><strong>{members.length} members</strong></div>
-                          {members.map(u => <div className="member-row" key={u.id}><Avatar user={u} size={30} presence /><div><strong>{u.name}</strong><small>{u.title}</small></div></div>)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="members-wrap">
-                      <button className="icon-btn icon-btn--lg" aria-label="More options" aria-expanded={moreOpen} onClick={() => { setMoreOpen(o => !o); setMembersOpen(false) }}><MoreHorizontal size={20} /></button>
-                      {moreOpen && (
-                        <div className="popover popover--menu">
-                          <button disabled={conversation.kind !== 'channel'} onClick={() => { setMoreOpen(false); setModal({ archive: conversation.id }) }}>Archive channel</button>
-                          <button onClick={() => { setMoreOpen(false); setTypingOn(t => !t) }}>{typingOn ? 'Hide typing demo' : 'Show typing demo'}</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`ts-banner${tsOn ? '' : ' is-off'}`} role="status">
-                  <Sparkles size={15} />
-                  <span>{tsOn
-                    ? conversation.kind === 'dm'
-                      ? `TeamSync is enabled because you and ${partner?.name.split(' ')[0]} both allowed it. Nothing is shared without approval.`
-                      : 'TeamSync is enabled. New messages may surface task suggestions; nothing is shared without approval.'
-                    : conversation.kind === 'dm' ? 'TeamSync is off. It only reads this DM once you and the other person both allow it.' : 'TeamSync is paused. Messages here are not read.'}</span>
-                  <button className="link-btn" onClick={toggleTeamSync}>{tsOn ? 'Pause' : 'Turn on'}</button>
-                </div>
 
                 <div className="tabs" role="tablist">
                   <button role="tab" aria-selected={tab === 'messages'} className={tab === 'messages' ? 'is-on' : ''} onClick={() => setTab('messages')}>Messages</button>
@@ -245,7 +209,7 @@ export default function CompanyChat() {
                   <>
                     <div className="messages" ref={scroller} role="log" aria-label={`Messages in ${title}`} tabIndex={0}>
                       {topLevel.length === 0 && (
-                        <div className="empty"><MessageSquare size={28} /><h3>Start the conversation</h3><p>Messages you send here stay in this browser.</p></div>
+                        <div className="empty"><MessageSquare size={28} /><h3>Start the conversation</h3><p>Send the first message to get things going.</p></div>
                       )}
                       {topLevel.map(m => (
                         <MessageItem key={m.id} message={m} meId={meId} replyCount={replyCount(m.id)}
@@ -264,7 +228,7 @@ export default function CompanyChat() {
                       <Composer value={drafts[conversation.id] ?? ''} onChange={v => setDrafts(d => ({ ...d, [conversation.id]: v }))}
                         onSend={(b, f) => sendMessage(b, f)} members={members}
                         placeholder={`Message ${conversation.kind === 'channel' ? '#' : ''}${title}`}
-                        typingOn={typingOn} onToggleTyping={() => setTypingOn(t => !t)} typingName={members.find(u => u.id !== meId)?.name.split(' ')[0]} />
+                      />
                     ) : (
                       <div className="join-bar"><span>You’re previewing <strong>#{conversation.name}</strong>.</span><button className="btn btn--primary" onClick={() => joinChannel(conversation.id)}>Join channel</button></div>
                     )}
@@ -293,6 +257,7 @@ export default function CompanyChat() {
                 </aside>
               )}
             </div>
+            </div>
           )}
         </main>
       </div>
@@ -318,13 +283,13 @@ export default function CompanyChat() {
         </Dialog>
       )}
       {modal === 'channel' && <NewChannel onClose={() => setModal(null)} onCreate={(name, description, isPublic) => {
-        const c: Conversation = { id: `ch-${name}-${Date.now()}`, kind: 'channel', name, description, isPublic, memberIds: [meId] }
+        const c: Conversation = { id: `ch-${name}-${Date.now()}`, kind: 'channel', name, description, isPublic, memberIds: [meId], ownerId: meId }
         setConvs(cs => [...cs, c]); selectConversation(c.id); setModal(null)
       }} />}
       {modifyTarget && <ModifyTask s={modifyTarget} conversation={convs.find(c => c.id === modifyTarget.conversationId)!} meId={meId} onClose={() => setModal(null)} onSave={(over, invite) => createTask(modifyTarget, over, invite)} />}
       {deleteTarget && (
         <Dialog title="Delete this message?" onClose={() => setModal(null)}>
-          <p className="muted">This removes your message and its replies from this local demo.</p>
+          <p className="muted">This removes your message and its replies.</p>
           <div className="dialog__actions"><button className="btn" onClick={() => setModal(null)}>Cancel</button><button className="btn btn--danger" onClick={() => removeMessage(deleteTarget)}>Delete message</button></div>
         </Dialog>
       )}

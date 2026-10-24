@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, ChevronRight, Clock, FileText, FolderOpen, Image, Link2, ShieldCheck, Sparkles, Users, X } from 'lucide-react'
+import { Check, ChevronRight, Clock, FileText, FolderOpen, Image, Link2, ShieldCheck, Info, Sparkles, Users, X } from 'lucide-react'
 import type { Conversation, Message, Suggestion, Task, User } from './types'
 import { STATUS_LABEL, conversationTitle } from './data'
 import SuggestionCard from './SuggestionCard'
@@ -33,9 +33,9 @@ const URL_RE = /https?:\/\/[^\s)]+/g
 export default function TeamSyncPanel(p: Props) {
   const [shared, setShared] = useState<Shared>('directory')
   const [reviewing, setReviewing] = useState<string | null>(null)
+  const [showTasks, setShowTasks] = useState(false)
 
   const pending = p.suggestions.filter(s => s.status === 'pending')
-  const open = p.tasks.filter(t => t.status === 'open' || t.status === 'in_progress')
   const done = p.tasks.filter(t => t.status === 'done').length
   const pct = p.tasks.length ? Math.round((done / p.tasks.length) * 100) : 0
   const title = conversationTitle(p.conversation, p.me.id)
@@ -49,34 +49,21 @@ export default function TeamSyncPanel(p: Props) {
     <aside className="tspanel" aria-label="TeamSync">
       <header className="tspanel__head">
         <span className="tspanel__icon"><Sparkles size={18} /></span>
-        <div><h2>TeamSync</h2><p>Overview &amp; shared resources</p></div>
+        <div><h2>TeamSync</h2><p>{title} · {p.members.length} members</p></div>
+        <span className="tspanel__info" tabIndex={0} role="img" aria-label="TeamSync may surface task suggestions from new messages. Nothing is shared without approval. Progress is completed tasks divided by approved tasks, not a measure of team capacity." title="TeamSync may surface task suggestions from new messages. Nothing is shared without approval.&#10;Progress is completed tasks ÷ approved tasks, not a measure of team capacity."><Info size={17} /></span>
         <button className="icon-btn" aria-label="Close TeamSync panel" onClick={p.onClose}><X size={18} /></button>
       </header>
 
       <div className="tspanel__body">
-        <section className="tscard">
-          <div className="tscard__top">
-            <div>
-              <div className="eyebrow">TeamSync overview</div>
-              <p className="tscard__sub">{title} · {p.members.length} members</p>
-            </div>
-            <button className="icon-btn icon-btn--box" aria-label="View tasks for this conversation" onClick={p.onViewTasks}><ArrowRight size={16} /></button>
-          </div>
-          <div className="stats">
-            <div className="stat"><strong>{open.length}</strong><span>Open tasks</span></div>
-            <div className={`stat${p.on && pending.length ? ' stat--warn' : ''}`}><strong>{p.on ? pending.length : 0}</strong><span>Needs review</span></div>
-          </div>
-        </section>
-
-        {!p.on && <p className="tspanel__paused"><ShieldCheck size={15} /> TeamSync is off here. Nothing is read or suggested until you turn it on.</p>}
+        {!p.on && <p className="tspanel__paused"><ShieldCheck size={15} /> TeamSync is off here. Nothing is read or suggested until it is turned on.</p>}
 
         {p.on && pending.length > 0 && (
           <section className="tscard tscard--review">
-            <div className="tscard__row"><span className="eyebrow"><Clock size={14} /> Needs your review</span><span className="pill pill--amber">{pending.length} waiting</span></div>
+            <div className="tscard__row"><span className="eyebrow"><Clock size={14} /> Needs your review</span><span className="pill pill--amber">{pending.length}</span></div>
             {pending.map(s => (
               <div key={s.id}>
                 <div className="review-row">
-                  <div><strong>{s.title}</strong><small>Proposed by TeamSync · {s.confidence}% confidence</small></div>
+                  <div><strong>{s.title}</strong><small>Suggested by TeamSync</small></div>
                   <button className="btn btn--small" aria-expanded={reviewing === s.id} onClick={() => setReviewing(r => (r === s.id ? null : s.id))}>
                     {reviewing === s.id ? 'Hide' : 'Review'} <ChevronRight size={13} />
                   </button>
@@ -89,18 +76,27 @@ export default function TeamSyncPanel(p: Props) {
             ))}
           </section>
         )}
+        {p.on && pending.length === 0 && <p className="caught-up"><Check size={15} /> All caught up. Nothing needs your review.</p>}
 
-        <section className="tscard">
-          <div className="tscard__row"><span className="eyebrow">Project progress</span><span className="pill pill--blue">{p.tasks.length ? 'In progress' : 'No tasks yet'}</span></div>
-          <h3 className="tscard__title">{project}</h3>
-          <div className="progress__label"><span>{done} of {p.tasks.length} approved tasks complete</span><strong>{pct}%</strong></div>
-          <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
-          <ul className="task-mini">
-            {p.tasks.slice(0, 4).map(t => (
-              <li key={t.id}><span>{t.title}</span><span className={`pill pill--${t.status}`}>{STATUS_LABEL[t.status]}</span></li>
-            ))}
-          </ul>
-          <p className="note"><ShieldCheck size={14} /> Progress is completed tasks ÷ approved tasks — not a measure of team capacity.</p>
+        <section className="progress-block">
+          <div className="progress__label">
+            <span><strong>{project}</strong></span>
+            <span>{done} of {p.tasks.length} complete</span>
+          </div>
+          <div className="progress" role="progressbar" aria-label="Project progress" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
+          {p.tasks.length > 0 && (
+            <button className="link-btn" aria-expanded={showTasks} onClick={() => setShowTasks(v => !v)}>
+              {showTasks ? 'Hide tasks' : `View ${p.tasks.length} ${p.tasks.length === 1 ? 'task' : 'tasks'}`}
+            </button>
+          )}
+          {showTasks && (
+            <ul className="task-mini">
+              {p.tasks.map(t => (
+                <li key={t.id}><span>{t.title}</span><span className={`pill pill--${t.status}`}>{STATUS_LABEL[t.status]}</span></li>
+              ))}
+              <li><button className="link-btn" onClick={p.onViewTasks}>Open Tasks tab</button></li>
+            </ul>
+          )}
         </section>
 
         <div className="shared__title"><FolderOpen size={16} /> Shared in this chat</div>

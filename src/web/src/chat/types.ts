@@ -1,4 +1,4 @@
-// Frontend-only demo types. Replaced by the generated API client once contracts exist.
+// Frontend types. Replaced by the generated API client once contracts exist.
 export type Presence = 'online' | 'away' | 'offline'
 export type Role = 'admin' | 'member'
 export type TaskStatus = 'open' | 'in_progress' | 'done' | 'cancelled'
@@ -22,6 +22,7 @@ export type Conversation = {
   isPublic: boolean
   memberIds: string[]
   department?: string
+  ownerId?: string
 }
 
 export type FileAttachment = { id: string; name: string; size: string }

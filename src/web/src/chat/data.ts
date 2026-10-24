@@ -10,12 +10,12 @@ export const users: User[] = [
 ]
 
 export const conversations: Conversation[] = [
-  { id: 'dept-operations', kind: 'department', name: 'Operations', description: 'Operations department · every task of every member', isPublic: false, memberIds: ['alice', 'nina', 'priya', 'marco'], department: 'Operations' },
-  { id: 'dept-engineering', kind: 'department', name: 'Engineering', description: 'Engineering department · every task of every member', isPublic: false, memberIds: ['bob'], department: 'Engineering' },
-  { id: 'ch-website-refresh', kind: 'channel', name: 'website-refresh', description: 'A focused space for the Northstar website refresh.', isPublic: true, memberIds: ['alice', 'bob', 'nina', 'priya'] },
-  { id: 'ch-customer-insights', kind: 'channel', name: 'customer-insights', description: 'Research notes and patterns from customer conversations.', isPublic: true, memberIds: ['alice', 'marco', 'nina', 'priya'] },
-  { id: 'ch-leadership-planning', kind: 'channel', name: 'leadership-planning', description: 'Private planning space for the leadership group.', isPublic: false, memberIds: ['alice', 'priya'] },
-  { id: 'ch-brand-assets', kind: 'channel', name: 'brand-assets', description: 'Logos, templates and approved brand material.', isPublic: true, memberIds: ['nina', 'bob'] },
+  { id: 'dept-operations', kind: 'department', name: 'Operations', description: 'Operations department · every task of every member', isPublic: false, memberIds: ['alice', 'nina', 'priya', 'marco'], department: 'Operations', ownerId: 'alice' },
+  { id: 'dept-engineering', kind: 'department', name: 'Engineering', description: 'Engineering department · every task of every member', isPublic: false, memberIds: ['bob'], department: 'Engineering', ownerId: 'alice' },
+  { id: 'ch-website-refresh', kind: 'channel', name: 'website-refresh', description: 'A focused space for the Northstar website refresh.', isPublic: true, memberIds: ['alice', 'bob', 'nina', 'priya'], ownerId: 'alice' },
+  { id: 'ch-customer-insights', kind: 'channel', name: 'customer-insights', description: 'Research notes and patterns from customer conversations.', isPublic: true, memberIds: ['alice', 'marco', 'nina', 'priya'], ownerId: 'marco' },
+  { id: 'ch-leadership-planning', kind: 'channel', name: 'leadership-planning', description: 'Private planning space for the leadership group.', isPublic: false, memberIds: ['alice', 'priya'], ownerId: 'alice' },
+  { id: 'ch-brand-assets', kind: 'channel', name: 'brand-assets', description: 'Logos, templates and approved brand material.', isPublic: true, memberIds: ['nina', 'bob'], ownerId: 'nina' },
   { id: 'dm-alice-nina', kind: 'dm', name: '', description: 'Direct message', isPublic: false, memberIds: ['alice', 'nina'] },
   { id: 'dm-alice-marco', kind: 'dm', name: '', description: 'Direct message', isPublic: false, memberIds: ['alice', 'marco'] },
 ]

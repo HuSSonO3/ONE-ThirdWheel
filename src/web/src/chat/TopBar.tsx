@@ -14,19 +14,21 @@ interface Props {
   onOpenResult: (conversationId: string, messageId: string) => void
   onOpenNotification: (n: AppNotification) => void
   onMarkAllRead: () => void
+  embedded?: boolean
 }
 
-export default function TopBar({ me, crumb, conversations, messages, notifications, onMenu, onOpenResult, onOpenNotification, onMarkAllRead }: Props) {
+export default function TopBar({ me, crumb, conversations, messages, notifications, onMenu, onOpenResult, onOpenNotification, onMarkAllRead, embedded }: Props) {
   const [q, setQ] = useState('')
   const [focus, setFocus] = useState(false)
   const [bell, setBell] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const h = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); inputRef.current?.focus() } }
+    const h = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); if (embedded) setSearchOpen(true); else inputRef.current?.focus() } }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [])
+  }, [embedded])
 
   const results = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -38,30 +40,40 @@ export default function TopBar({ me, crumb, conversations, messages, notificatio
       .map(m => ({ m, c: accessible.get(m.conversationId)! }))
   }, [q, messages, conversations, me.id])
 
+  const Wrapper = embedded ? 'div' : 'header'
   const unread = notifications.filter(n => !n.read).length
 
   return (
-    <header className="topbar">
-      <button className="icon-btn topbar__menu" aria-label="Open navigation" onClick={onMenu}><Menu size={20} /></button>
-      <nav className="crumbs" aria-label="Breadcrumb"><span>Northstar</span><span className="crumbs__sep">›</span><strong>{crumb}</strong></nav>
+    <Wrapper className={embedded ? 'topbar topbar--embedded' : 'topbar'}>
+      {!embedded && <>
+        <button className="icon-btn topbar__menu" aria-label="Open navigation" onClick={onMenu}><Menu size={20} /></button>
+        <nav className="crumbs" aria-label="Breadcrumb"><span>Northstar</span><span className="crumbs__sep">›</span><strong>{crumb}</strong></nav>
+      </>}
 
-      <div className="search">
+      <div className="search-slot">
+        {embedded && (
+          <button className="icon-btn icon-btn--box icon-btn--lg" aria-label="Search messages" aria-expanded={searchOpen}
+            onMouseDown={e => e.preventDefault()} onClick={() => setSearchOpen(o => !o)}><Search size={19} /></button>
+        )}
+        {(!embedded || searchOpen) && <div className={embedded ? 'search search--drop' : 'search'}>
         <Search size={17} />
         <input ref={inputRef} type="search" placeholder="Search messages" aria-label="Search messages" value={q}
-          onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)} onBlur={() => setTimeout(() => setFocus(false), 150)} />
+          onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)} onBlur={() => setTimeout(() => { setFocus(false); if (embedded) setSearchOpen(false) }, 150)}
+          onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setQ('') } }} autoFocus={embedded} />
         <kbd>⌘ K</kbd>
         {focus && q.trim() && (
           <div className="popover popover--results" role="listbox">
             {results.length === 0 && <div className="popover__empty">No messages match “{q}”.</div>}
             {results.map(({ m, c }) => (
               <button key={m.id} role="option" aria-selected="false" onMouseDown={e => e.preventDefault()}
-                onClick={() => { onOpenResult(c.id, m.parentId ?? m.id); setQ('') }}>
+                onClick={() => { onOpenResult(c.id, m.parentId ?? m.id); setQ(''); setSearchOpen(false) }}>
                 <small>{c.kind === 'dm' ? conversationTitle(c, me.id) : `# ${c.name}`} · {userById(m.authorId)?.name}</small>
                 <span>{m.body.length > 90 ? m.body.slice(0, 90) + '…' : m.body}</span>
               </button>
             ))}
           </div>
         )}
+      </div>}
       </div>
 
       <div className="bell-wrap">
@@ -80,6 +92,6 @@ export default function TopBar({ me, crumb, conversations, messages, notificatio
         )}
       </div>
       <Avatar user={me} size={34} />
-    </header>
+    </Wrapper>
   )
 }

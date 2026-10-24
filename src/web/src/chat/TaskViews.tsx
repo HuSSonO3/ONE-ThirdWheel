@@ -97,7 +97,7 @@ export function AdminView() {
   const [scopes, setScopes] = useState({ 'conversations:read': true, 'suggestions:create': true, 'suggestions:status': true })
   return (
     <section className="page">
-      <header className="page__head"><div><h1>Admin &amp; people</h1><p>Local demo only — user management and AI settings arrive with the backend.</p></div></header>
+      <header className="page__head"><div><h1>Admin &amp; people</h1><p>Manage people and AI settings.</p></div></header>
       <div className="admin-grid">
         <div className="card">
           <h2>People</h2>
