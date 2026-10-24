@@ -13,13 +13,12 @@ interface Props {
   onReject: (s: Suggestion) => void
 }
 
-export default function SuggestionCard({ suggestion: s, conversation, source, me, onAccept, onModify, onReject }: Props) {
+export default function SuggestionCard({ suggestion: s, conversation, source, onAccept, onModify, onReject }: Props) {
   const assignee = userById(s.assigneeId)
   const sourceAuthor = source ? userById(source.authorId) : undefined
-  const isMember = conversation.memberIds.includes(me.id)
-  const assigneeIn = conversation.memberIds.includes(s.assigneeId)
-  // Assignment rule (spec 2.7): assignee must be a member unless the accepter is their direct manager.
-  const allowed = assigneeIn || assignee?.managerId === me.id
+  const isMember = conversation.isMember
+  // Assignment rule (spec 2.7) is decided by the server: `canAccept` already accounts for the direct-manager exception.
+  const allowed = s.canAccept
   const decided = s.status !== 'pending'
 
   return (
@@ -38,12 +37,12 @@ export default function SuggestionCard({ suggestion: s, conversation, source, me
       <h3 className="suggest__title">{s.title}</h3>
       <p className="suggest__desc">{s.description}</p>
 
-      <div className="suggest__row">
+      {s.kind === 'task' && <div className="suggest__row">
         <Avatar user={assignee} size={26} />
         <strong>{assignee?.name}</strong>
         <span>{s.project}</span>
         <span>{s.due}</span>
-      </div>
+      </div>}
 
       {source && (
         <div className="suggest__source">
@@ -56,7 +55,7 @@ export default function SuggestionCard({ suggestion: s, conversation, source, me
       )}
 
       {!decided && !allowed && (
-        <p className="suggest__warn">{assignee?.name} isn’t in this channel.</p>
+        <p className="suggest__warn">{assignee?.name ?? 'The assignee'} isn’t in this channel.</p>
       )}
 
       {!decided && (

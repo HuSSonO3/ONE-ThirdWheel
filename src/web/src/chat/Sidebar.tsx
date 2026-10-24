@@ -12,7 +12,6 @@ interface Props {
   conversations: Conversation[]
   activeId: string
   view: View
-  unread: Record<string, number>
   myTaskCount: number
   open: boolean
   onClose: () => void
@@ -24,12 +23,11 @@ interface Props {
 }
 
 export default function Sidebar(p: Props) {
-  const mine = p.conversations.filter(c => c.memberIds.includes(p.me.id))
+  const mine = p.conversations.filter(c => c.isMember)
   const dept = mine.filter(c => c.kind === 'department')
   const channels = mine.filter(c => c.kind === 'channel')
   const dms = mine.filter(c => c.kind === 'dm')
-  const key = (id: string) => `${p.me.id}:${id}`
-  const unreadIn = (list: Conversation[]) => list.reduce((n, c) => n + (p.unread[key(c.id)] ?? 0), 0)
+  const unreadIn = (list: Conversation[]) => list.reduce((n, c) => n + c.unread, 0)
 
   const activeKind = p.conversations.find(c => c.id === p.activeId)?.kind
   const [listTab, setListTab] = useState<ListTab>(activeKind === 'dm' ? 'dms' : 'channels')
@@ -40,7 +38,7 @@ export default function Sidebar(p: Props) {
   const showList = p.view === 'chat'
 
   const row = (c: Conversation) => {
-    const n = p.unread[key(c.id)] ?? 0
+    const n = c.unread
     const partner = c.kind === 'dm' ? dmPartner(c, p.me.id) : undefined
     return (
       <button key={c.id} className={`nav-row${active(c.id) ? ' is-active' : ''}${n ? ' is-unread' : ''}`}

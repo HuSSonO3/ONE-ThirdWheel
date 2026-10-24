@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { CheckCheck, ListTodo } from 'lucide-react'
 import type { Conversation, Task, TaskStatus, User } from './types'
-import { STATUS_LABEL, conversations as allConversations, userById, users } from './data'
+import { STATUS_LABEL, userById } from './data'
 import { Avatar } from './ui'
+import SuggestionCard from './SuggestionCard'
+import type { Suggestion } from './types'
 
 interface TableProps {
   tasks: Task[]
@@ -37,13 +39,12 @@ function TaskTable({ tasks, showSource, onStatus, emptyText }: TableProps) {
             <tbody>
               {rows.map(t => {
                 const a = userById(t.assigneeId)
-                const src = allConversations.find(c => c.id === t.sourceConversationId)
                 return (
                   <tr key={t.id}>
                     <td><strong>{t.title}</strong>{t.createdByAi && <span className="tag">via TeamSync</span>}</td>
                     <td><span className="who"><Avatar user={a} size={24} />{a?.name}</span></td>
                     <td>{t.project ?? '—'}</td>
-                    {showSource && <td>{src ? `# ${src.name}` : '—'}</td>}
+                    {showSource && <td>{t.sourceConversationName ? `# ${t.sourceConversationName}` : '—'}</td>}
                     <td>
                       <select className={`status status--${t.status}`} aria-label={`Status of ${t.title}`} value={t.status} onChange={e => onStatus(t.id, e.target.value as TaskStatus)}>
                         {Object.entries(STATUS_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -68,11 +69,15 @@ export function ConversationTasks({ conversation, tasks, onStatus }: { conversat
 }
 
 /** Personal dashboard (spec 2.4) with subordinate picker. */
-export function MyTasks({ me, tasks, onStatus }: { me: User; tasks: Task[]; onStatus: (id: string, s: TaskStatus) => void }) {
-  const reports = users.filter(u => u.managerId === me.id)
+export function MyTasks({ me, tasks, reports, reportTasks, suggestions, conversations, onLoadReport, onStatus, onAccept, onModify, onReject }: {
+  me: User; tasks: Task[]; reports: User[]; reportTasks: Record<string, Task[]>
+  suggestions: Suggestion[]; conversations: Conversation[]
+  onLoadReport: (userId: string) => void; onStatus: (id: string, s: TaskStatus) => void
+  onAccept: (s: Suggestion, invite?: boolean) => void; onModify: (s: Suggestion) => void; onReject: (s: Suggestion) => void
+}) {
   const [viewing, setViewing] = useState(me.id)
   const who = viewing === me.id || reports.some(r => r.id === viewing) ? viewing : me.id
-  const list = tasks.filter(t => t.assigneeId === who)
+  const list = who === me.id ? tasks : reportTasks[who] ?? []
   return (
     <section className="page">
       <header className="page__head">
@@ -80,40 +85,24 @@ export function MyTasks({ me, tasks, onStatus }: { me: User; tasks: Task[]; onSt
         <div><h1>{who === me.id ? 'My tasks' : `${userById(who)?.name}’s tasks`}</h1><p>Everything assigned to {who === me.id ? 'you' : userById(who)?.name?.split(' ')[0]}, from every conversation.</p></div>
         {reports.length > 0 && (
           <label className="page__picker">View dashboard of
-            <select value={who} onChange={e => setViewing(e.target.value)}>
+            <select value={who} onChange={e => { setViewing(e.target.value); if (e.target.value !== me.id) onLoadReport(e.target.value) }}>
               <option value={me.id}>Me</option>
               {reports.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </label>
         )}
       </header>
+      {who === me.id && suggestions.length > 0 && (
+        <div className="suggested">
+          <h2>Suggested for you <span className="count count--soft">{suggestions.length}</span></h2>
+          <p className="muted">TeamSync proposed these from your conversations. Nothing is assigned until a person accepts.</p>
+          {suggestions.map(s => {
+            const c = conversations.find(x => x.id === s.conversationId)
+            return c ? <SuggestionCard key={s.id} suggestion={s} conversation={c} me={me} onAccept={onAccept} onModify={onModify} onReject={onReject} /> : null
+          })}
+        </div>
+      )}
       <TaskTable tasks={list} showSource onStatus={onStatus} emptyText="Nothing is assigned to this person right now." />
-    </section>
-  )
-}
-
-/** Placeholder admin page (spec 1.3 / 3.5). */
-export function AdminView() {
-  const [scopes, setScopes] = useState({ 'conversations:read': true, 'suggestions:create': true, 'suggestions:status': true })
-  return (
-    <section className="page">
-      <header className="page__head"><div><h1>Admin &amp; people</h1><p>Manage people and AI settings.</p></div></header>
-      <div className="admin-grid">
-        <div className="card">
-          <h2>People</h2>
-          <table>
-            <thead><tr><th>Name</th><th>Title</th><th>Department</th><th>Role</th></tr></thead>
-            <tbody>{users.map(u => <tr key={u.id}><td><span className="who"><Avatar user={u} size={24} />{u.name}</span></td><td>{u.title}</td><td>{u.department}</td><td>{u.role}</td></tr>)}</tbody>
-          </table>
-        </div>
-        <div className="card">
-          <h2>TeamSync AI scopes</h2>
-          {Object.entries(scopes).map(([k, v]) => (
-            <label className="check" key={k}><input type="checkbox" checked={v} onChange={() => setScopes(s => ({ ...s, [k]: !v }))} /> <code>{k}</code></label>
-          ))}
-          <p className="muted">The AI proposes; a person accepts. It never acts as a user.</p>
-        </div>
-      </div>
     </section>
   )
 }
