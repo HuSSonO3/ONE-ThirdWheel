@@ -58,28 +58,29 @@ Explain how your project uses AI to solve the problem and what makes it valuable
 
 ## Project Structure
 
+All code lives in `src/` (layout from `plan.md` §2).
+
 ```
 .
-├── docs/                    # Screenshots, diagrams
-├── runpod/
-│   └── handler.py           # RunPod serverless handler (GPU workload)
 ├── src/
-│   ├── main.py              # Application entry point
-│   └── utils.py             # Helper functions
-├── submission/              # Required submission documents
-│   ├── SDC2026_ONEThirdWheel_Preliminary.pdf      # Preliminary submission
-│   ├── SDC2026_ONEThirdWheel_TechDeclaration.pdf  # Technology declaration
-│   ├── SDC2026_ONEThirdWheel_Replit_POU.pdf       # Replit proof of use
-│   └── SDC2026_ONEThirdWheel_Runpod_POU.pdf       # RunPod proof of use
-├── tests/
-│   └── test_utils.py        # Unit tests
-├── .env.example             # Example environment variables
-├── .gitignore
-├── .replit                  # Replit run configuration
+│   ├── contracts/       # shared · OpenAPI spec, WS events, events row, Tool interface
+│   ├── migrations/      # shared · Alembic migrations (the schema)
+│   ├── fixtures/        # shared · seed data used by all three tiers
+│   ├── web/             # FE · React + TypeScript (Vite); web/src/api/ is generated
+│   ├── api/             # BE · FastAPI: models, services, routers, access rules
+│   ├── ai/              # AI · worker, tools, dispatcher
+│   ├── scripts/         # shared · seed.py, gen_client.sh
+│   ├── tests/
+│   └── pyproject.toml   # one Python workspace for api + ai
+├── submission/          # Required submission documents
+├── .github/workflows/   # CI: lint + tests for all tiers, client diff check
+├── docker-compose.yml   # postgres, minio, api, web
+├── plan.md              # Build plan
 ├── LICENSE
-├── requirements.txt         # Python dependencies
 └── README.md
 ```
+
+Local setup: `docker compose up` (web on :5173, API on :8000, `GET /health`).
 
 ### Architecture
 
