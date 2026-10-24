@@ -20,9 +20,8 @@
 | Resource          | Link                                           |
 | ----------------- | ---------------------------------------------- |
 | GitHub Repository | https://github.com/HuSSonO3/ONE-ThirdWheel     |
-| Replit Project    |  |
 | Live Demo         |                 |
-| RunPod Endpoint   |      |
+| RunPod Endpoint   |  https://api.runpod.ai/v2/ezymgds6tvhvu9/    |
 | Slide Deck        | [`submission/SDC2026_ONEThirdWheel_SlideDeck.pdf`](submission/SDC2026_ONEThirdWheel_SlideDeck.pdf) |
 | Demo Video        |              |
 
