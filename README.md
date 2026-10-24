@@ -71,11 +71,12 @@ All code lives in `src/` (layout from `plan.md` §2).
 │   ├── ai/              # AI · worker, tools, dispatcher
 │   ├── scripts/         # shared · build_fixtures.py, seed.py, gen_client.sh
 │   ├── tests/
+│   ├── docker-compose.yml  # postgres, s3, api, web
+│   ├── feature_spec.md     # Feature specification
+│   ├── plan.md             # Build plan
 │   └── pyproject.toml   # one Python workspace for api + ai
 ├── submission/          # Required submission documents
 ├── .github/workflows/   # CI: lint + tests for all tiers, client diff check
-├── docker-compose.yml   # postgres, minio, api, web
-├── plan.md              # Build plan
 ├── LICENSE
 └── README.md
 ```
@@ -83,6 +84,7 @@ All code lives in `src/` (layout from `plan.md` §2).
 ### Local setup
 
 ```bash
+cd src
 docker compose up --build            # postgres, minio, api (runs migrations), web
 docker compose exec api python scripts/seed.py --reset   # load the fixtures
 ```
